@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>Project 1: Images of the Russian Empire</title>
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <!-- Favicons -->
+  <link href="../assets/img/favicon.png" rel="icon">
+  <link href="../assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&family=Nunito:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+    rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="../assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="../assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="../assets/vendor/aos/aos.css" rel="stylesheet">
+  <link href="../assets/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
+  <link href="../assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
+
+  <!-- Main CSS File -->
+  <link href="../assets/css/main.css" rel="stylesheet">
+</head>
+
+<body class="portfolio-details-page">
+  <main class="main">
+
+    <!-- Page Title -->
+    <div class="page-title dark-background">
+      <div class="container d-lg-flex justify-content-between align-items-center">
+        <h1 class="mb-2 mb-lg-0">
+          <a href="/CS180/" class="navbar-title-link">Joel's CS180 Projects</a>
+        </h1>
+
+        <nav class="breadcrumbs">
+          <ol>
+            <li><a href="/CS180/">Joel's CS180 Projects</a></li>
+            <li class="current">Project 1</li>
+          </ol>
+        </nav>
+      </div>
+    </div><!-- End Page Title -->
+
+    <section id="project-0" class="project-section container py-5">
+
+      <!-- Page Title -->
+      <div class="section-title text-center">
+        <h2>Project 1: Images of the Russian Empire</h2>
+        <p>Colorizing the <a href="https://www.loc.gov/collections/prokudin-gorskii/">Prokudin-Gorskii</a> photo
+          collection.</p>
+      </div>
+
+      <!-- Background -->
+      <div class="project-part mb-5">
+        <h3>Background</h3>
+        <p><a href="https://en.wikipedia.org/wiki/Sergei_Prokudin-Gorskii">Sergei Mikhailovich Prokudin-Gorskii</a> (1863-1944) [Сергей Михайлович Прокудин-Горский, to his Russian friends] was a man well ahead of his time. Convinced, as early as 1907, that color photography was the wave of the future, he won Tzar's special permission to travel across the vast Russian Empire and take color photographs of everything he saw including the only color portrait of Leo Tolstoy. And he really photographed everything: people, buildings, landscapes, railroads, bridges... thousands of color pictures! His idea was simple: record three exposures of every scene onto a glass plate using a red, a green, and a blue filter. Never mind that there was no way to print color photographs until much later -- he envisioned special projectors to be installed in "multimedia" classrooms all across Russia where the children would be able to learn about their vast country. Alas, his plans never materialized: he left Russia in 1918, right after the revolution, never to return again. Luckily, his RGB glass plate negatives, capturing the last years of the Russian Empire, survived and were purchased in 1948 by the Library of Congress. The LoC has recently digitized the negatives and made them available on-line.
+        </p>
+      </div>
+
+      <!-- The Problem -->
+      <div class="project-part mb-5">
+        <h3>The Problem</h3>
+        <p>However, to recreate Prokudin-Gorskii's work in its full glory, we need a way to stack the red, green, blue data captured on seperate planes into a single RGB images.
+        </p>
+        <div class="gallery-card text-center mx-auto">
+          <a href="../assets/img/project1/emir.jpg" class="glightbox" title="Emir R, G, & B tiles scan">
+            <img src="../assets/img/project1/emir.jpg" alt="Emir" class="gallery-img">
+          </a>
+          <p class="caption mt-2">Emir R, G, & B tiles scan.</p>
+        </div>
+
+      </div>
+      
+      <!-- Part 1: Single-scale Alignment -->
+      <div class="project-part mb-5">
+        <h3>Single-scale Alignment:</h3>
+        <h4>Alignment Metrics</h4>
+        <p>To compute score the alignment between any two given channels, there are a variety of metrics one can use.
+          For this project, I implemented <b>L2 Eucledian Distance</b> and <b>Normalized Cross Correlation</b>:</p>
+        <ul>
+          <li>
+            <b>L2 Norm (Eucledian Distance):</b>
+            \[
+            \text{L2}(I_1, I_2) = \sum_{x, y} (I_1(x, y) - I_2(x, y))^2
+            \]
+          </li>
+          <li>
+            <b>Normalized Cross Correlation (NCC):</b>
+            \[
+            \text{NCC}(I_1, I_2) = \frac{I_1}{\|I_1\|} \cdot \frac{I_2}{\|I_2\|}
+            \]
+            Where \(I_1\) and \(I_2\) are the vectors containing the pixel values of two input images.
+          </li>
+        </ul>
+
+        <p>By exhaustively searching over a window of possible displacements (e.g. [-15,15] pixels), scoring each one using one of the above metrics, and taking the displacement with the best score, we can find the displacement vector that aligns any one channel with another. Repeating this process for two channels onto the third, we can properly stack the channels to recover an single RGB image, as desired.</p>
+
+        <h4>Initial Results</h4>
+        <!-- Initial Results: Selfie Comparison Gallery -->
+        <div class="gallery d-flex flex-wrap justify-content-center gap-4 my-4">
+
+          <!-- Image Card -->
+          <div class="gallery-card text-center">
+            <a href="../assets/img/project1/low-res/cathedral_aligned.jpg" class="glightbox" title="Cathedral (metric = L2)">
+              <img src="../assets/img/project1/low-res/cathedral_aligned.jpg" alt="cathedral aligned, metric=L2" class="gallery-img">
+            </a>
+            <p class="caption mt-2">Cathedral (metric = L2).</p>
+          </div>
+
+          <div class="gallery-card text-center">
+            <a href="../assets/img/project1/low-res/monastery_aligned.jpg" class="glightbox" title="Monastery (metric = L2)">
+              <img src="../assets/img/project1/low-res/monastery_aligned.jpg" alt="monastery aligned, metric=L2" class="gallery-img">
+            </a>
+            <p class="caption mt-2">Monastery (metric = L2).</p>
+          </div>
+
+          <div class="gallery-card text-center">
+            <a href="../assets/img/project1/low-res/tobolsk_aligned.jpg" class="glightbox" title="Tobolsk (metric = L2)">
+              <img src="../assets/img/project1/low-res/tobolsk_aligned.jpg" alt="tobolsk aligned, metric=L2" class="gallery-img">
+            </a>
+            <p class="caption mt-2">Tobolsk (metric = L2).</p>
+          </div>
+        </div>
+        <p>
+          It was mostly a success, but what happened with the Cathedral channel alignment? Let's compare the tile scans of the Cathedral to tiles that did align properly, to see if we can spot the problem.
+        </p>
+        <div class="gallery d-flex flex-wrap justify-content-center gap-4 my-4">
+          <div class="gallery-card text-center">
+            <a href="../assets/img/project1/low-res/cathedral.jpg" class="glightbox" title="Cathedral tile scan">
+              <img src="../assets/img/project1/low-res/cathedral.jpg" alt="cathedral tile scan" class="gallery-img">
+            </a>
+            <p class="caption mt-2">Cathedral tile scan.</p>
+          </div>
+          <div class="gallery-card text-center">
+            <a href="../assets/img/project1/low-res/monastery.jpg" class="glightbox" title="Monastery tile scan">
+              <img src="../assets/img/project1/low-res/monastery.jpg" alt="cathedral tile scan" class="gallery-img">
+            </a>
+            <p class="caption mt-2">Monastery tile scan.</p>
+          </div>
+          <div class="gallery-card text-center">
+            <a href="../assets/img/project1/low-res/tobolsk.jpg" class="glightbox" title="Tobolsk tile scan">
+              <img src="../assets/img/project1/low-res/tobolsk.jpg" alt="cathedral tile scan" class="gallery-img">
+            </a>
+            <p class="caption mt-2">Tobolsk tile scan.</p>
+          </div>
+        </div>
+        <p>Unlike the tobolsk and monastery scans, the cathedral scan has inconsistent borders accross its 3 tiles. As a result, vacuous alignment metric gains are made by displacemnts that should not see them. To account for such cases, we performed the alignment scoring on each attempted displacement only after cropping out the borders of the image. By deafualt, we crop out 10% of both the image on each side; this works well empirically.</p>
+      </div>
+      <h4>Results with cropping</h4>
+      <div class="gallery d-flex flex-wrap justify-content-center gap-4 my-4">
+
+        <!-- Image Card -->
+        <div class="gallery-card text-center">
+          <a href="../assets/img/project1/low-res/cathedral_aligned.jpg" class="glightbox" title="Cathedral (metric = L2, max_shift=15)">
+            <img src="../assets/img/project1/low-res/cathedral_aligned.jpg" alt="cathedral aligned, metric=L2" class="gallery-img">
+          </a>
+          <p class="caption mt-2">Cathedral (metric = L2, max_shift=15).</p>
+        </div>
+
+        <div class="gallery-card text-center">
+          <a href="../assets/img/project1/low-res/monastery_misaligned.jpg" class="glightbox" title="Monastery (metric = L2, max_shift=15)">
+            <img src="../assets/img/project1/low-res/monastery_misaligned.jpg" alt="monastery aligned, metric=L2" class="gallery-img">
+          </a>
+          <p class="caption mt-2">Monastery (metric = L2, max_shift=15).</p>
+        </div>
+
+        <div class="gallery-card text-center">
+          <a href="../assets/img/project1/low-res/tobolsk_aligned.jpg" class="glightbox" title="Tobolsk (metric = L2, max_shift=15)">
+            <img src="../assets/img/project1/low-res/tobolsk_aligned.jpg" alt="tobolsk aligned, metric=L2" class="gallery-img">
+          </a>
+          <p class="caption mt-2">Tobolsk (metric = L2, max_shift=15).</p>
+        </div>
+      </div>
+
+      <!-- Part 2: Architectural Perspective Compression -->
+      <div class="project-part mb-5">
+        <h3>Part 2: Architectural Perspective Compression</h3>
+        <p>Let's repeat the same procedure in reverse, for an urban scene. Pick a nice view down a long street (or a
+          walking path on campus), zoom in, and take a photo. Now, walk down the street in the direction of your first
+          shot, and take a second photo without zoom, such that the scene in the two photos appears approximately the
+          same size. The first picture should look flattened, or compressed, compared to the second.</p>
+
+        <!-- Part 2: Architectural Comparison Gallery -->
+        <div class="gallery d-flex flex-wrap justify-content-center gap-4 my-4">
+
+          <!-- Image Card -->
+          <div class="gallery-card text-center">
+            <a href="../assets/img/project0/architecture/dinasours5.png" class="glightbox" title="No zoom; Dinosaur Near">
+              <img src="../assets/img/project0/architecture/dinasours5.png" alt="dinosaur far" class="gallery-img">
+            </a>
+            <p class="caption mt-2">No zoom; Dinosaur Near</p>
+          </div>
+
+          <div class="gallery-card text-center">
+            <a href="../assets/img/project0/architecture/dinasours1.png" class="glightbox" title="Yes zoom; Dinosaur Far">
+              <img src="../assets/img/project0/architecture/dinasours1.png" alt="dinosaur near" class="gallery-img">
+            </a>
+            <p class="caption mt-2">Yes zoom; Dinosaur Far</p>
+          </div>
+
+          <!-- GIF Card -->
+          <div class="gallery-card text-center">
+            <div class="fun-frame">
+              <a href="../assets/img/project0/architecture/dinasours.gif" class="glightbox" title="GIF: Perspective change from near to far">
+                <img src="../assets/img/project0/architecture/dinasours.gif" alt="Dinosaur perspective comparison GIF"
+                  class="img-fluid rounded" style="max-width: 200px; width: 100%; height: auto;">
+              </a>
+            </div>
+            <p class="caption mt-2">GIF: Perspective change from near to far</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Part 3: The Dolly Zoom -->
+      <div class="project-part mb-5">
+        <h3>Part 3: The Dolly Zoom</h3>
+        <p>Try the classic “Vertigo shot” by zooming in while physically moving backward. This creates a surreal effect
+          where the subject stays the same size but the background warps dramatically.</p>
+
+        <!-- GIF Card -->
+        <div class="d-flex justify-content-center my-3">
+          <div class="text-center">
+            <div class="fun-frame">
+              <a href="../assets/img/project0/bearChairResized.gif" class="glightbox" title="GIF: Dolly Zoom effect in action">
+                <img src="../assets/img/project0/bearChairResized.gif" alt="Dolly Zoom demo GIF" class="rounded gif-big">
+              </a>
+            </div>
+            <p class="caption mt-2">GIF: Dolly Zoom effect in action</p>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <footer id="footer" class="footer position-relative">
+
+    <div class="container">
+      <div class="copyright text-center ">
+        <p>© <span>Copyright 2026.</span> <span>Joel's CS180 Projects.</span></p>
+      </div>
+    </div>
+
+  </footer>
+
+  <!-- Scroll Top -->
+  <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i
+      class="bi bi-arrow-up-short"></i></a>
+
+  <!-- Preloader -->
+  <div id="preloader"></div>
+
+  <!-- Vendor JS Files -->
+  <script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="../assets/vendor/php-email-form/validate.js"></script>
+  <script src="../assets/vendor/aos/aos.js"></script>
+  <script src="../assets/vendor/typed.js/typed.umd.js"></script>
+  <script src="../assets/vendor/purecounter/purecounter_vanilla.js"></script>
+  <script src="../assets/vendor/waypoints/noframework.waypoints.js"></script>
+  <script src="../assets/vendor/isotope-layout/isotope.pkgd.min.js"></script>
+  <script src="../assets/vendor/imagesloaded/imagesloaded.pkgd.min.js"></script>
+  <script src="../assets/vendor/glightbox/js/glightbox.min.js"></script>
+  <script src="../assets/vendor/swiper/swiper-bundle.min.js"></script>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+  </script>
+
+  <!-- Main JS File -->
+  <script src="../assets/js/main.js"></script>
+
+</body>
+
+</html>
