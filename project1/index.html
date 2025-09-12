@@ -165,16 +165,16 @@
         <h3>Part 2: Multi-scale pyramid alignment (with NCC / L2)</h3>
         
         <div class="gallery-card text-center mx-auto">
-          <a href="../assets/img/project1/galleries/pyramid example.png" class="glightbox" title="Gaussian Pyramid">
-            <img src="../assets/img/project1/galleries/pyramid example.png" alt="Gaussian Pyramid" class="gallery-img">
+          <a href="../assets/img/project1/galleries/pyramid example.png" class="glightbox" title="Pyramid">
+            <img src="../assets/img/project1/galleries/pyramid example.png" alt="Pyramid" class="gallery-img" style="max-width: 100%;">
           </a>
-          <p class="caption mt-2">Gaussian Pyramid.</p>
+          <p class="caption mt-2">Pyramid of church (CLICK ME).</p>
         </div>
         <p>
           Our implementation of single-scale alignment works well on these lower resolution images, but the runtime quickly becomes impractical for higher resolution images. To address this, we can use a multi-scale pyramid approach to align images. A pyramid is a data structure that allows us to represent an image at multiple scales, with each level of the pyramid representing the image at a lower resolution (in our case by a factor 2). This allows us to quickly compute the alignment at a lower resolution, and then refine at higher resolutions. More specifically:
         </p>
         <p>
-          1. Build a Gaussian pyramid for each channel of the red, green, blue channels respectively. Let the height of the pyramid(s) be h.
+          1. Build a pyramid for each channel of the red, green, blue channels respectively. Let the height of the pyramid(s) be h.
         </p>
         <p>
           2. For each level of the pyramid from <em>h</em>-1 to 0 (i.e. lowest resolution to highest resolution), compute 
@@ -190,13 +190,13 @@
         <p>Note: Click to expand image galleries</p>
         <div class="gallery d-flex flex-wrap justify-content-center gap-4 my-4">
           <!-- Image Card -->
-          <div class="gallery-card text-center mx-auto">
+          <div class="gallery-card text-center">
             <a href="../assets/img/project1/galleries/L2_output.png" class="glightbox" title="w/L2 metric (max_shift=15, crop=10%)">
               <img src="../assets/img/project1/galleries/L2_output.png" alt="aligned, metric=L2" class="gallery-img">
             </a>
             <p class="caption mt-2">w/L2 metric (max_shift=15, crop=10%).</p>
           </div>
-          <div class="gallery-card text-center mx-auto">
+          <div class="gallery-card text-center">
             <a href="../assets/img/project1/galleries/NCC_output.png" class="glightbox" title="w/NCC metric (max_shift=15, crop=10%)">
               <img src="../assets/img/project1/galleries/NCC_output.png" alt="aligned, metric=L2" class="gallery-img">
             </a>
@@ -237,7 +237,7 @@
             <a href="../assets/img/project1/galleries/extra_output.png" class="glightbox" title="Bonus galery.">
               <img src="../assets/img/project1/galleries/extra_output.png" alt="Emir channels" class="gallery-img">
             </a>
-            <p class="caption mt-2">Bonus gallery.</p>
+            <p class="caption mt-2">Bonus gallery (CLICK ME).</p>
           </div>
         </div>
     </section>
