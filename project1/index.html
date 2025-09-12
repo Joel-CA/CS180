@@ -81,29 +81,25 @@
       
       <!-- Part 1: Single-scale Alignment -->
       <div class="project-part mb-5">
-        <h3>Single-scale Alignment:</h3>
-        <h4>Alignment Metrics</h4>
+        <h3>Part 1: Single-scale Alignment:</h3>
+        <p><b>Alignment Metrics</b></p>
         <p>To compute score the alignment between any two given channels, there are a variety of metrics one can use.
-          For this project, I implemented <b>L2 Eucledian Distance</b> and <b>Normalized Cross Correlation</b>:</p>
-        <ul>
-          <li>
-            <b>L2 Norm (Eucledian Distance):</b>
-            \[
-            \text{L2}(I_1, I_2) = \sum_{x, y} (I_1(x, y) - I_2(x, y))^2
-            \]
-          </li>
-          <li>
-            <b>Normalized Cross Correlation (NCC):</b>
-            \[
-            \text{NCC}(I_1, I_2) = \frac{I_1}{\|I_1\|} \cdot \frac{I_2}{\|I_2\|}
-            \]
-            Where \(I_1\) and \(I_2\) are the vectors containing the pixel values of two input images.
-          </li>
-        </ul>
+          For this project, we implemented <b>L2 Eucledian Distance</b> and <b>Normalized Cross Correlation</b>:</p>
+        <p><b>L2 Norm (Eucledian Distance):</b></p>
+        <p>
+          \[\text{L2}(I_1, I_2) = \sum_{x, y} (I_1(x, y) - I_2(x, y))^2\]
+        </p>
+        <p><b>Normalized Cross Correlation (NCC):</b></p>
+        <p>
+          \[
+          \text{NCC}(I_1, I_2) = \frac{I_1}{\|I_1\|} \cdot \frac{I_2}{\|I_2\|}
+          \]
+          Where \(I_1\) and \(I_2\) are the vectors containing the pixel values of two input images.
+        </p>
 
         <p>By exhaustively searching over a window of possible displacements (e.g. [-15,15] pixels), scoring each one using one of the above metrics, and taking the displacement with the best score, we can find the displacement vector that aligns any one channel with another. Repeating this process for two channels onto the third, we can properly stack the channels to recover an single RGB image, as desired.</p>
 
-        <h4>Initial Results</h4>
+        <p><b>Initial Results</b></p>
         <p>Note: You can click to expand images.</p>
         <!-- Initial Results: Selfie Comparison Gallery -->
         <div class="gallery d-flex flex-wrap justify-content-center gap-4 my-4">
@@ -133,93 +129,117 @@
         <p>
           It was mostly a success, but the Monastery image alignment seems to have been thrown off by imperfections in some of the channel, resulting in certain displacements scoring higher then they should.
         </p>
-      </div>
-      <h4>Results with cropping</h4>
-      <div class="gallery d-flex flex-wrap justify-content-center gap-4 my-4">
-
-        <!-- Image Card -->
-        <div class="gallery-card text-center">
-          <a href="../assets/img/project1/low-res/cathedral_aligned.jpg" class="glightbox" title="Cathedral (metric = L2, max_shift=15)">
-            <img src="../assets/img/project1/low-res/cathedral_aligned.jpg" alt="cathedral aligned, metric=L2" class="gallery-img">
-          </a>
-          <p class="caption mt-2">Cathedral (metric = L2, max_shift=15, crop=10%).</p>
-        </div>
-
-        <div class="gallery-card text-center">
-          <a href="../assets/img/project1/low-res/monastery_aligned.jpg" class="glightbox" title="Monastery (metric = L2, max_shift=15)">
-            <img src="../assets/img/project1/low-res/monastery_aligned.jpg" alt="monastery aligned, metric=L2" class="gallery-img">
-          </a>
-          <p class="caption mt-2">Monastery (metric = L2, max_shift=15, crop=10%).</p>
-        </div>
-
-        <div class="gallery-card text-center">
-          <a href="../assets/img/project1/low-res/tobolsk_aligned.jpg" class="glightbox" title="Tobolsk (metric = L2, max_shift=15)">
-            <img src="../assets/img/project1/low-res/tobolsk_aligned.jpg" alt="tobolsk aligned, metric=L2" class="gallery-img">
-          </a>
-          <p class="caption mt-2">Tobolsk (metric = L2, max_shift=15, crop=10%).</p>
-        </div>
-      </div>
-      <p>Cathedral and Tobolsk align all the same, but Monastery is now aligned properly. Success!</p>
-      <p>Note: To be clear, this crop is not one of the final image, just those copies in memory used to compute the alignment metric.</p>
-
-      <!-- Part 2: Architectural Perspective Compression -->
-      <div class="project-part mb-5">
-        <h3>Part 2: Architectural Perspective Compression</h3>
-        <p>Let's repeat the same procedure in reverse, for an urban scene. Pick a nice view down a long street (or a
-          walking path on campus), zoom in, and take a photo. Now, walk down the street in the direction of your first
-          shot, and take a second photo without zoom, such that the scene in the two photos appears approximately the
-          same size. The first picture should look flattened, or compressed, compared to the second.</p>
-
-        <!-- Part 2: Architectural Comparison Gallery -->
+        <p><b>Results with cropping</p></b>
         <div class="gallery d-flex flex-wrap justify-content-center gap-4 my-4">
 
           <!-- Image Card -->
           <div class="gallery-card text-center">
-            <a href="../assets/img/project0/architecture/dinasours5.png" class="glightbox" title="No zoom; Dinosaur Near">
-              <img src="../assets/img/project0/architecture/dinasours5.png" alt="dinosaur far" class="gallery-img">
+            <a href="../assets/img/project1/low-res/cathedral_aligned.jpg" class="glightbox" title="Cathedral (metric = L2, max_shift=15)">
+              <img src="../assets/img/project1/low-res/cathedral_aligned.jpg" alt="cathedral aligned, metric=L2" class="gallery-img">
             </a>
-            <p class="caption mt-2">No zoom; Dinosaur Near</p>
+            <p class="caption mt-2">Cathedral (metric = L2, max_shift=15, crop=10%, ag=(2,5), ar=(3,12)).</p>
           </div>
 
           <div class="gallery-card text-center">
-            <a href="../assets/img/project0/architecture/dinasours1.png" class="glightbox" title="Yes zoom; Dinosaur Far">
-              <img src="../assets/img/project0/architecture/dinasours1.png" alt="dinosaur near" class="gallery-img">
+            <a href="../assets/img/project1/low-res/monastery_aligned.jpg" class="glightbox" title="Monastery (metric = L2, max_shift=15)">
+              <img src="../assets/img/project1/low-res/monastery_aligned.jpg" alt="monastery aligned, metric=L2" class="gallery-img">
             </a>
-            <p class="caption mt-2">Yes zoom; Dinosaur Far</p>
+            <p class="caption mt-2">Monastery (metric = L2, max_shift=15, crop=10%, ag=(2,-3), ar=(2,3)).</p>
           </div>
 
-          <!-- GIF Card -->
           <div class="gallery-card text-center">
-            <div class="fun-frame">
-              <a href="../assets/img/project0/architecture/dinasours.gif" class="glightbox" title="GIF: Perspective change from near to far">
-                <img src="../assets/img/project0/architecture/dinasours.gif" alt="Dinosaur perspective comparison GIF"
-                  class="img-fluid rounded" style="max-width: 200px; width: 100%; height: auto;">
-              </a>
-            </div>
-            <p class="caption mt-2">GIF: Perspective change from near to far</p>
+            <a href="../assets/img/project1/low-res/tobolsk_aligned.jpg" class="glightbox" title="Tobolsk (metric = L2, max_shift=15)">
+              <img src="../assets/img/project1/low-res/tobolsk_aligned.jpg" alt="tobolsk aligned, metric=L2" class="gallery-img">
+            </a>
+            <p class="caption mt-2">Tobolsk (metric = L2, max_shift=15, crop=10%, ag=(3,3), ar=(3,6)).</p>
           </div>
         </div>
+        <p>Cathedral and Tobolsk align all the same, but Monastery is now aligned properly. Success!</p>
+        <p>Note: The results were the same using metric = NCC.</p>
+        <p>Note: To be clear, this crop is not one of the final image, just those copies in memory used to compute the alignment metric.</p>
       </div>
+      
 
-      <!-- Part 3: The Dolly Zoom -->
+      <!-- Part 2: Multi-scale pyramid alignment (with NCC / L2) -->
       <div class="project-part mb-5">
-        <h3>Part 3: The Dolly Zoom</h3>
-        <p>Try the classic “Vertigo shot” by zooming in while physically moving backward. This creates a surreal effect
-          where the subject stays the same size but the background warps dramatically.</p>
-
-        <!-- GIF Card -->
-        <div class="d-flex justify-content-center my-3">
-          <div class="text-center">
-            <div class="fun-frame">
-              <a href="../assets/img/project0/bearChairResized.gif" class="glightbox" title="GIF: Dolly Zoom effect in action">
-                <img src="../assets/img/project0/bearChairResized.gif" alt="Dolly Zoom demo GIF" class="rounded gif-big">
-              </a>
-            </div>
-            <p class="caption mt-2">GIF: Dolly Zoom effect in action</p>
+        <h3>Part 2: Multi-scale pyramid alignment (with NCC / L2)</h3>
+        
+        <div class="gallery-card text-center mx-auto">
+          <a href="../assets/img/project1/galleries/pyramid example.png" class="glightbox" title="Gaussian Pyramid">
+            <img src="../assets/img/project1/galleries/pyramid example.png" alt="Gaussian Pyramid" class="gallery-img">
+          </a>
+          <p class="caption mt-2">Gaussian Pyramid.</p>
+        </div>
+        <p>
+          Our implementation of single-scale alignment works well on these lower resolution images, but the runtime quickly becomes impractical for higher resolution images. To address this, we can use a multi-scale pyramid approach to align images. A pyramid is a data structure that allows us to represent an image at multiple scales, with each level of the pyramid representing the image at a lower resolution (in our case by a factor 2). This allows us to quickly compute the alignment at a lower resolution, and then refine at higher resolutions. More specifically:
+        </p>
+        <p>
+          1. Build a Gaussian pyramid for each channel of the red, green, blue channels respectively. Let the height of the pyramid(s) be h.
+        </p>
+        <p>
+          2. For each level of the pyramid from <em>h</em>-1 to 0 (i.e. lowest resolution to highest resolution), compute 
+          \[
+            \max_{(x,y)} \; alignment\_metric(I_1, I_2)
+          \]
+          where \( I_1 \) and \( I_2 \) are the (possibly cropped) images at the current level of the pyramid, and \( alignment\_metric \) is either L2 or NCC over a window size that is halved at each descent to the next level. The search window is centered at the displacement vector found at the previous level of the pyramid (scaled up by two to account for the resolution gain).
+        </p>
+        <p>
+          3. The displacement vector found at the highest resolution level of the pyramid is the final displacement vector.
+        </p>
+        <p><b>Results (on higher resolution tile scans)</b></p>
+        <p>Note: Click to expand image galleries</p>
+        <div class="gallery d-flex flex-wrap justify-content-center gap-4 my-4">
+          <!-- Image Card -->
+          <div class="gallery-card text-center mx-auto">
+            <a href="../assets/img/project1/galleries/L2_output.png" class="glightbox" title="w/L2 metric (max_shift=15, crop=10%)">
+              <img src="../assets/img/project1/galleries/L2_output.png" alt="aligned, metric=L2" class="gallery-img">
+            </a>
+            <p class="caption mt-2">w/L2 metric (max_shift=15, crop=10%).</p>
+          </div>
+          <div class="gallery-card text-center mx-auto">
+            <a href="../assets/img/project1/galleries/NCC_output.png" class="glightbox" title="w/NCC metric (max_shift=15, crop=10%)">
+              <img src="../assets/img/project1/galleries/NCC_output.png" alt="aligned, metric=L2" class="gallery-img">
+            </a>
+            <p class="caption mt-2">w/NCC metric (max_shift=15, crop=10%).</p>
           </div>
         </div>
+
+        <p>The L2 metric wasn't able to quite line up all images. However, using NCC, all the images look great! Except...</p>
+        <div class="gallery d-flex flex-wrap justify-content-center gap-4 my-4">
+          <!-- Image Card -->
+          <div class="gallery-card text-center mx-auto">
+            <a href="../assets/img/project1/emir_aligned.jpg" class="glightbox" title="Emir (mis)aligned.">
+              <img src="../assets/img/project1/emir_aligned.jpg" alt="aligned, metric=L2" class="gallery-img">
+            </a>
+            <p class="caption mt-2">Emir (mis)aligned.</p>
+          </div>
+        </div>
+        <p>To understand what's going on here, let's take a look at the channels seperateley:</p>
+        <div class="gallery d-flex flex-wrap justify-content-center gap-4 my-4">
+          <!-- Image Card -->
+          <div class="gallery-card text-center mx-auto">
+            <a href="../assets/img/project1/emir_channel_debugging.png" class="glightbox" title="Emir channels.">
+              <img src="../assets/img/project1/emir_channel_debugging.png" alt="Emir channels" class="gallery-img">
+            </a>
+            <p class="caption mt-2">Emir channels.</p>
+          </div>
+        </div>
+        <p>From this it is clear that the images does not actually have the same brightness values (they are different color channels) for corresponding pixels (most notably, Emir's clothing). To resolve this issue, you'd need a more cleverer metric. For instance, one could perform an edge detecion convolution on the two channels in quesiton and perform the alignment on the outputs. This will be left for future work as the current implementiaton is succesfull on all other images.</p>
       </div>
 
+      <!-- Part 3: Bonus images -->
+      <div class="project-part mb-5">
+        <h3>Part 3: More alignment on bonus images!</h3>
+        <p>Check on the algorithm succesfully align this set of pictures taken of tools and animals across Russia:</p>
+        <div class="gallery d-flex flex-wrap justify-content-center gap-4 my-4">
+          <!-- Image Card -->
+          <div class="gallery-card text-center mx-auto">
+            <a href="../assets/img/project1/galleries/extra_output.png" class="glightbox" title="Bonus galery.">
+              <img src="../assets/img/project1/galleries/extra_output.png" alt="Emir channels" class="gallery-img">
+            </a>
+            <p class="caption mt-2">Bonus gallery.</p>
+          </div>
+        </div>
     </section>
 
   </main>
