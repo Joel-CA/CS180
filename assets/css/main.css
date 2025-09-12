@@ -1525,14 +1525,33 @@ section,
 # Project 0
 --------------------------------------------------------------*/
 .project-part h3,
-.project-part p {
-  max-width: 800px;     /* keeps it from running too wide */
-  margin-left: auto;    /* centers the block */
+.project-part h4,
+.project-part p,
+.project-part ul,
+.project-part li,
+.project-part ol {
+  max-width: 800px;
+  margin-left: auto;
   margin-right: auto;
 }
 
 .project-part p {
   text-align: justify;  /* optional: makes paragraphs look cleaner */
+}
+
+/* Fix list alignment - remove default padding and use controlled margin */
+.project-part ul {
+  padding-left: 0;           /* Remove default browser padding */
+  margin-left: 1.2rem;       /* Add controlled left margin for indentation */
+}
+
+.project-part li {
+  margin: 0;                 /* Reset all margins for list items */
+}
+
+/* Ensure h4 headers align consistently */
+.project-part h4 {
+  margin-bottom: 1rem;       /* Standard spacing below headers */
 }
 
 .gif-big {

@@ -104,6 +104,7 @@
         <p>By exhaustively searching over a window of possible displacements (e.g. [-15,15] pixels), scoring each one using one of the above metrics, and taking the displacement with the best score, we can find the displacement vector that aligns any one channel with another. Repeating this process for two channels onto the third, we can properly stack the channels to recover an single RGB image, as desired.</p>
 
         <h4>Initial Results</h4>
+        <p>Note: You can click to expand images.</p>
         <!-- Initial Results: Selfie Comparison Gallery -->
         <div class="gallery d-flex flex-wrap justify-content-center gap-4 my-4">
 
@@ -116,8 +117,8 @@
           </div>
 
           <div class="gallery-card text-center">
-            <a href="../assets/img/project1/low-res/monastery_aligned.jpg" class="glightbox" title="Monastery (metric = L2)">
-              <img src="../assets/img/project1/low-res/monastery_aligned.jpg" alt="monastery aligned, metric=L2" class="gallery-img">
+            <a href="../assets/img/project1/low-res/monastery_misaligned.jpg" class="glightbox" title="Monastery (metric = L2)">
+              <img src="../assets/img/project1/low-res/monastery_misaligned.jpg" alt="monastery aligned, metric=L2" class="gallery-img">
             </a>
             <p class="caption mt-2">Monastery (metric = L2).</p>
           </div>
@@ -130,29 +131,8 @@
           </div>
         </div>
         <p>
-          It was mostly a success, but what happened with the Cathedral channel alignment? Let's compare the tile scans of the Cathedral to tiles that did align properly, to see if we can spot the problem.
+          It was mostly a success, but the Monastery image alignment seems to have been thrown off by imperfections in some of the channel, resulting in certain displacements scoring higher then they should.
         </p>
-        <div class="gallery d-flex flex-wrap justify-content-center gap-4 my-4">
-          <div class="gallery-card text-center">
-            <a href="../assets/img/project1/low-res/cathedral.jpg" class="glightbox" title="Cathedral tile scan">
-              <img src="../assets/img/project1/low-res/cathedral.jpg" alt="cathedral tile scan" class="gallery-img">
-            </a>
-            <p class="caption mt-2">Cathedral tile scan.</p>
-          </div>
-          <div class="gallery-card text-center">
-            <a href="../assets/img/project1/low-res/monastery.jpg" class="glightbox" title="Monastery tile scan">
-              <img src="../assets/img/project1/low-res/monastery.jpg" alt="cathedral tile scan" class="gallery-img">
-            </a>
-            <p class="caption mt-2">Monastery tile scan.</p>
-          </div>
-          <div class="gallery-card text-center">
-            <a href="../assets/img/project1/low-res/tobolsk.jpg" class="glightbox" title="Tobolsk tile scan">
-              <img src="../assets/img/project1/low-res/tobolsk.jpg" alt="cathedral tile scan" class="gallery-img">
-            </a>
-            <p class="caption mt-2">Tobolsk tile scan.</p>
-          </div>
-        </div>
-        <p>Unlike the tobolsk and monastery scans, the cathedral scan has inconsistent borders accross its 3 tiles. As a result, vacuous alignment metric gains are made by displacemnts that should not see them. To account for such cases, we performed the alignment scoring on each attempted displacement only after cropping out the borders of the image. By deafualt, we crop out 10% of both the image on each side; this works well empirically.</p>
       </div>
       <h4>Results with cropping</h4>
       <div class="gallery d-flex flex-wrap justify-content-center gap-4 my-4">
@@ -162,23 +142,25 @@
           <a href="../assets/img/project1/low-res/cathedral_aligned.jpg" class="glightbox" title="Cathedral (metric = L2, max_shift=15)">
             <img src="../assets/img/project1/low-res/cathedral_aligned.jpg" alt="cathedral aligned, metric=L2" class="gallery-img">
           </a>
-          <p class="caption mt-2">Cathedral (metric = L2, max_shift=15).</p>
+          <p class="caption mt-2">Cathedral (metric = L2, max_shift=15, crop=10%).</p>
         </div>
 
         <div class="gallery-card text-center">
-          <a href="../assets/img/project1/low-res/monastery_misaligned.jpg" class="glightbox" title="Monastery (metric = L2, max_shift=15)">
-            <img src="../assets/img/project1/low-res/monastery_misaligned.jpg" alt="monastery aligned, metric=L2" class="gallery-img">
+          <a href="../assets/img/project1/low-res/monastery_aligned.jpg" class="glightbox" title="Monastery (metric = L2, max_shift=15)">
+            <img src="../assets/img/project1/low-res/monastery_aligned.jpg" alt="monastery aligned, metric=L2" class="gallery-img">
           </a>
-          <p class="caption mt-2">Monastery (metric = L2, max_shift=15).</p>
+          <p class="caption mt-2">Monastery (metric = L2, max_shift=15, crop=10%).</p>
         </div>
 
         <div class="gallery-card text-center">
           <a href="../assets/img/project1/low-res/tobolsk_aligned.jpg" class="glightbox" title="Tobolsk (metric = L2, max_shift=15)">
             <img src="../assets/img/project1/low-res/tobolsk_aligned.jpg" alt="tobolsk aligned, metric=L2" class="gallery-img">
           </a>
-          <p class="caption mt-2">Tobolsk (metric = L2, max_shift=15).</p>
+          <p class="caption mt-2">Tobolsk (metric = L2, max_shift=15, crop=10%).</p>
         </div>
       </div>
+      <p>Cathedral and Tobolsk align all the same, but Monastery is now aligned properly. Success!</p>
+      <p>Note: To be clear, this crop is not one of the final image, just those copies in memory used to compute the alignment metric.</p>
 
       <!-- Part 2: Architectural Perspective Compression -->
       <div class="project-part mb-5">
