@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>Project 5B: Flow Matching from Scratch!</title>
+
+  <!-- Favicons -->
+  <link href="../../assets/img/favicon.png" rel="icon">
+  <link href="../../assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&family=Nunito:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+    rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="../../assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="../../assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="../../assets/vendor/aos/aos.css" rel="stylesheet">
+  <link href="../../assets/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
+  <link href="../../assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
+
+  <!-- Main CSS File -->
+  <link href="../../assets/css/main.css" rel="stylesheet">
+  <!-- Math rendering (MathJax) -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+
+<body class="portfolio-details-page">
+  <main class="main">
+    <!-- Page Title -->
+    <div class="page-title dark-background">
+      <div class="container d-lg-flex justify-content-between align-items-center">
+        <h1 class="mb-2 mb-lg-0">
+          <a href="/CS180/" class="navbar-title-link">Joel's CS180 Projects</a>
+        </h1>
+        <nav class="breadcrumbs">
+          <ol>
+            <li><a href="/CS180/">Joel's CS180 Projects</a></li>
+            <li><a href="/CS180/project5/">Project 5</a></li>
+            <li class="current">B</li>
+          </ol>
+        </nav>
+      </div>
+    </div><!-- End Page Title -->
+    
+    <!-- Part 1 Section -->
+    <section id="part1" class="section">
+      <div class="container section-title" data-aos="fade-up" style="max-width: 1200px;">
+        <h2>Part 1: Training a Single-Step Denoising UNet</h2>
+      </div>
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100" style="max-width: 1200px;">
+        
+        <!-- Introduction -->
+        <div class="row mb-5">
+          <div class="col-lg-12">
+            <p>This project began by implementing a simple one-step denoiser. Given a noisy image z, the objective was to train a denoiser D<sub>θ</sub> such that it maps z to a clean image x. This was accomplished by optimizing over an L2 loss:</p>
+            <p class="text-center"><em>L = 𝔼<sub>z,x</sub>‖D<sub>θ</sub>(z) − x‖²</em> ... (B.1)</p>
+          </div>
+        </div>
+
+        <!-- 1.1 UNet Implementation -->
+        <div class="row mb-4">
+          <div class="col-lg-12">
+            <h2>1.1 Implementing the UNet</h2>
+            <p>The denoiser was implemented as a <a href="https://arxiv.org/abs/1505.04597" target="_blank">UNet</a> architecture, consisting of downsampling and upsampling blocks with skip connections. The UNet employs standard tensor operations including convolutional layers (Conv2d), batch normalization (BatchNorm2d), GELU activation functions, transposed convolutions (ConvTranspose2d), and average pooling (AvgPool2d).</p>
+            
+            <div class="text-center my-4">
+              <img src="images/unconditional_arch.png" class="img-fluid" alt="UNet Architecture" style="max-width: 600px;">
+              <p class="text-muted mt-2">Figure 1: Unconditional UNet Architecture</p>
+            </div>
+
+            <p>The architecture includes the following key components:</p>
+            <ul>
+              <li><strong>Conv:</strong> A convolutional layer that maintains image resolution while modifying channel dimensions</li>
+              <li><strong>DownConv:</strong> A convolutional layer that downsamples the tensor by a factor of 2</li>
+              <li><strong>UpConv:</strong> A convolutional layer that upsamples the tensor by a factor of 2</li>
+              <li><strong>Flatten:</strong> An average pooling layer that flattens a 7×7 tensor into a 1×1 tensor</li>
+              <li><strong>Unflatten:</strong> A convolutional layer that unflattens a 1×1 tensor into a 7×7 tensor</li>
+              <li><strong>Concat:</strong> Channel-wise concatenation between tensors with the same 2D shape</li>
+            </ul>
+
+            <p>The hyperparameter D represents the number of hidden channels and was set to optimize network performance.</p>
+          </div>
+        </div>
+
+        <!-- 1.2 Training -->
+        <div class="row mb-4">
+          <div class="col-lg-12">
+            <h2>1.2 Using the UNet to Train a Denoiser</h2>
+            <p>The training objective involved solving the denoising problem where a noisy image z is mapped to a clean image x by optimizing the L2 loss function shown above.</p>
+            
+            <p>To generate training data pairs (z, x), where each x is a clean MNIST digit, the following noising process was applied:</p>
+            <p class="text-center"><em>z = x + σε, where ε ~ N(0, I)</em> ... (B.2)</p>
+            
+            <h3>1.2.1 Visualization of Noise Levels</h3>
+            <p>The noising process was first visualized across different noise levels σ = [0.0, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0] on normalized images where x ∈ [0, 1]. As expected, images became progressively noisier as σ increased.</p>
+            
+            <div class="my-4">
+              <p>Visualization of MNIST digits at noise levels σ = 0.0, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0]</p>
+
+                <table style="border-collapse: collapse; width: 30%; margin: 0 auto;">
+                  <tbody>
+                    <tr>
+                      <td style="padding: 0; border: none;">
+                        <img src="images/1.2/noising_process_0.png" alt="Noising Process 0" style="width: 100%; display: block;">
+                        <p>σ = 0.0</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 0; border: none;">
+                        <img src="images/1.2/noising_process_2.png" alt="Noising Process 2" style="width: 100%; display: block;">
+                        <p>σ = 0.2</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 0; border: none;">
+                        <img src="images/1.2/noising_process_4.png" alt="Noising Process 4" style="width: 100%; display: block;">
+                        <p>σ = 0.4</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 0; border: none;">
+                        <img src="images/1.2/noising_process_5.png" alt="Noising Process 5" style="width: 100%; display: block;">
+                        <p>σ = 0.5</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 0; border: none;">
+                        <img src="images/1.2/noising_process_6.png" alt="Noising Process 6" style="width: 100%; display: block;">
+                        <p>σ = 0.6</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 0; border: none;">
+                        <img src="images/1.2/noising_process_8.png" alt="Noising Process 8" style="width: 100%; display: block;">
+                        <p>σ = 0.8</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 0; border: none;">
+                        <img src="images/1.2/noising_process_10.png" alt="Noising Process 10" style="width: 100%; display: block;">
+                        <p>σ = 1.0</p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 1.2.1 Training Process -->
+        <div class="row mb-4">
+          <div class="col-lg-12">
+            <h3>1.2.2 Training the Denoiser</h3>
+            <p>The model was trained with the following specifications:</p>
+            <ul>
+              <li><strong>Objective:</strong> Train a denoiser to denoise noisy images z with σ = 0.5 applied to clean images x</li>
+              <li><strong>Dataset:</strong> MNIST training set with batch size of 256, shuffled before dataloader creation</li>
+              <li><strong>Model:</strong> UNet architecture with hidden dimension D = 128</li>
+              <li><strong>Optimizer:</strong> Adam optimizer with learning rate of 1e-4</li>
+              <li><strong>Training Duration:</strong> 5 epochs</li>
+            </ul>
+
+            <p>Images were noised dynamically when fetched from the dataloader, ensuring the network encountered new noised images in every epoch due to random ε, thereby improving generalization.</p>
+
+            <div class="my-4 text-center"></div>
+              <p>Training loss curve</p>
+              <img src="images/1.2/training_loss_curve.png" alt="Training Loss Curve" class="img-fluid mx-auto d-block" style="max-width: 100%;">
+            </div>
+
+            <div class="my-4 text-center"></div>
+              <p>Denoising results after epoch 1</p>
+              <img src="images/1.2/denoising_epoch1.png" alt="Denoising Results; 1 epoch" class="img-fluid mx-auto d-block" style="max-width: 50%;">
+            </div>
+
+            <div class="my-4 text-center"></div>
+              <p>Denoising results after epoch 5</p>
+              <img src="images/1.2/denoising_epoch5.png" alt="Denoising Results; 5 epoch" class="img-fluid mx-auto d-block" style="max-width: 50%;">
+            </div>
+
+            <p class="mx-auto px-3" style="max-width:900px;">After 5 epochs of training (approximately 3 minutes on a Colab T4 GPU), the denoiser achieved reasonable performance on the test set, producing legible digits from noisy inputs at σ = 0.5.</p>
+          </div>
+        </div>
+
+        <!-- 1.2.2 Out-of-Distribution Testing -->
+        <div class="mx-auto px-3" style="max-width:900px;" class="row mb-4">
+          <div class="col-lg-12">
+            <h2>1.2.2 Out-of-Distribution Testing</h2>
+            <p>To evaluate the robustness of the denoiser, it was tested on noise levels it had not been trained for. The model, trained exclusively on σ = 0.5, was evaluated on test set digits with varying noise levels σ = [0.0, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0].</p>
+
+            <div class="my-4">
+              <p>Out-of-distribution test results</p>
+              <img src="images/1.2/out_of_distribution_testing.png" alt="Out-of-Distribution Test Results" class="img-fluid mx-auto d-block" style="max-width: 70%;">
+            </div>
+
+            <p>This experiment revealed the generalization capabilities and limitations of the trained denoiser when applied to noise levels outside its training distribution.</p>
+          </div>
+        </div>
+
+        <!-- 1.2.3 Denoising Pure Noise -->
+        <div class="mx-auto px-3" style="max-width:900px;" class="row mb-5">
+          <div class="col-lg-12">
+            <h2>1.2.3 Denoising Pure Noise</h2>
+            <p>To transform denoising into a generative task, the model was tested on its ability to denoise pure, random Gaussian noise. This can be conceptualized as starting with a blank canvas z = ε where ε ~ N(0, I) and denoising it to produce a clean image x.</p>
+
+            <p>A new denoiser was trained using the same process as section 1.2.1, but with pure noise ε ~ N(0, I) as input instead of noised images. The model was trained for 5 epochs.</p>
+
+            <div class="my-4">
+              <p>Training loss curve for pure noise denoising</p>
+              <img src="images/1.2/denoising_pure_noise_training_losss.png" alt="Pure Noise Denoising Training Loss Curve" class="img-fluid mx-auto d-block" style="max-width: 100%;">
+            </div>
+
+            <div class="my-4">
+              <p class="mx-auto px-3" style="max-width:900px;">Pure noise denoising results after epoch 1</p>
+              <img src="images/1.2/denoising_pure_noise_epoch1.png" alt="Pure Noise Denoising Results; 1 epoch" class="img-fluid mx-auto d-block" style="max-width: 50%;">
+            </div>
+
+            <div class="my-4">
+              <p class="mx-auto px-3" style="max-width:900px;">Pure noise denoising results after epoch 5</p>
+              <img src="images/1.2/denoising_pure_noise_epoch5.png" alt="Pure Noise Denoising Results; 5 epoch" class="img-fluid mx-auto d-block" style="max-width: 50%;">
+            </div>
+
+            <h3 class="mx-auto px-3" style="max-width:900px;">Analysis of Generated Outputs</h3>
+            <div class="my-4">
+              <div class="mx-auto px-3" style="max-width:900px;">
+              <p><strong>Analysis of patterns observed</strong></p>
+              <p class="mb-0"><em>After 1 and 5 epochs, generated outputs look really similar. They appear to form something that resembles a 3 or an 8, but much more faded or 'smudged' across the center region of the image. This makes sense because the model learns to predict the "point" that minimizes the sum of squared distances to all training examples. What we are seeing here is something that could be thought of as the centroid of the MNIST data set; a ghostly number that consists of the most common strokes across all the digits in the dataset.</em></p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section><!-- /Part 1 Section -->
+
+    <!-- Part 2 Section -->
+    <section id="part2" class="section">
+      <div class="container section-title" data-aos="fade-up" style="max-width: 1200px;">
+        <h2>Part 2: Training a Flow Matching Model</h2>
+      </div>
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100" style="max-width: 1200px;">
+        
+        <!-- Introduction -->
+        <div class="row mb-5">
+          <div class="col-lg-12">
+            <p>The results from Part 1 demonstrated that one-step denoising does not perform well for generative tasks. Instead, iterative denoising is required, which was implemented using <a href="https://arxiv.org/abs/2210.02747" target="_blank">flow matching</a>. This approach trains a UNet model to predict the 'flow' from noisy data to clean data.</p>
+
+            <p>In the flow matching setup, a pure noise image x₀ ~ 𝒩(0, I) is sampled and progressively refined to generate a realistic image x₁. The intermediate noisy samples are constructed through linear interpolation between noisy x₀ and clean x₁:</p>
+
+            <p class="text-center"><em>x<sub>t</sub> = (1 − t)x₀ + tx₁ where x₀ ~ 𝒩(0, 1), t ∈ [0, 1]</em> ... (B.3)</p>
+
+            <p>This defines a vector field describing the position of a point x<sub>t</sub> at time t relative to the clean data distribution p₁(x₁) and the noisy data distribution p₀(x₀). For small t, the image remains close to noise, while for larger t, it approaches the clean distribution.</p>
+
+            <p>The flow can be conceptualized as the velocity (change in position with respect to time) of this vector field, describing the movement from x₀ to x₁:</p>
+
+            <p class="text-center"><em>u(x<sub>t</sub>, t) = dx<sub>t</sub>/dt = x₁ − x₀</em> ... (B.4)</p>
+
+            <p>The learning objective was to train a UNet u<sub>θ</sub>(x<sub>t</sub>, t) to approximate this flow:</p>
+
+            <p class="text-center"><em>L = 𝔼<sub>x₀~p₀(x₀), x₁~p₁(x₁), t~U[0,1]</sub>‖(x₁ − x₀) − u<sub>θ</sub>(x<sub>t</sub>, t)‖²</em> ... (B.5)</p>
+          </div>
+        </div>
+
+        <!-- 2.1 Time Conditioning -->
+        <div class="row mb-4">
+          <div class="col-lg-12">
+            <h2>2.1 Adding Time Conditioning to UNet</h2>
+            <p>To condition the UNet on the scalar timestep t, a time conditioning mechanism was implemented. The conditioning signal was injected into the UNet using FCBlock (fully-connected block) operations.</p>
+
+            <div class="text-center my-4">
+              <img src="images/conditional_arch_fm.png" class="img-fluid" alt="Conditioned UNet" style="max-width: 600px;">
+              <p class="text-muted mt-2">Figure 2: Time-Conditioned UNet Architecture</p>
+            </div>
+
+            <p><strong>Note:</strong> While the figure shows x₀ as output, the network actually predicts the flow from noisy x₀ to clean x₁, which contains both components of the original image and the noise to remove.</p>
+
+            <div class="text-center my-4">
+              <img src="images/fc_long.png" class="img-fluid" alt="FCBlock" style="max-width: 400px;">
+              <p class="text-muted mt-2">Figure 3: FCBlock for Conditioning</p>
+            </div>
+
+            <p>The FCBlock uses linear layers (nn.Linear) to embed the conditioning signal. Since t is a scalar, the input feature dimension F_in was set to 1. The time embedding was implemented as follows:</p>
+
+            <ul>
+              <li>Two FCBlocks (fc1_t and fc2_t) were created to process the normalized timestep t ∈ [0, 1]</li>
+              <li>The embedding t1 = fc1_t(t) modulates the unflatten operation: unflatten = unflatten * t1</li>
+              <li>The embedding t2 = fc2_t(t) modulates the up1 operation: up1 = up1 * t2</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 2.2 Training -->
+        <div class="row mb-4">
+          <div class="col-lg-12">
+            <h2>2.2 Training the UNet</h2>
+            <p>Training the time-conditioned UNet u<sub>θ</sub>(x<sub>t</sub>, t) followed a straightforward procedure. For each training iteration, a random image x₁ was selected from the training set, a random timestep t was sampled, noise was added to x₁ to obtain x<sub>t</sub>, and the denoiser was trained to predict the flow at x<sub>t</sub>.</p>
+
+            <div class="text-center my-4">
+              <img src="images/algo1_t_only_fm.png" class="img-fluid" alt="Training Algorithm" style="max-width: 400px;">
+              <p class="text-muted mt-2">Algorithm B.1: Training Time-Conditioned UNet</p>
+            </div>
+
+            <p>The training specifications were as follows:</p>
+            <ul>
+              <li><strong>Objective:</strong> Train a time-conditioned UNet to predict the flow at x<sub>t</sub> given a noisy image and timestep</li>
+              <li><strong>Dataset:</strong> MNIST training set with batch size of 64, shuffled before dataloader creation</li>
+              <li><strong>Model:</strong> Time-conditioned UNet with hidden dimension D = 64</li>
+              <li><strong>Optimizer:</strong> Adam optimizer with initial learning rate of 1e-2 and exponential learning rate decay scheduler with gamma = 0.1^(1.0/num_epochs)</li>
+              <li><strong>Training Duration:</strong> Multiple epochs until convergence</li>
+            </ul>
+
+            <div class="my-4">
+              <p>Training loss curve for time-conditioned UNet</p>
+              <img src="images/2.0/time_conditioned_curve.png" alt="Training Loss Curve" class="img-fluid mx-auto d-block" style="max-width: 100%;">
+            </div>
+          </div>
+        </div>
+
+        <!-- 2.3 Sampling -->
+        <div class="row mb-4">
+          <div class="col-lg-12">
+            <h2>2.3 Sampling from the UNet</h2>
+            <p>Once trained, the UNet was used for iterative denoising following Algorithm B.2. While the results were not perfect, legible digits emerged from the iterative denoising process.</p>
+
+            <div class="text-center my-4">
+              <img src="images/algo2_t_only_fm.png" class="img-fluid" alt="Sampling Algorithm" style="max-width: 400px;">
+              <p class="text-muted mt-2">Algorithm B.2: Sampling from Time-Conditioned UNet</p>
+            </div>
+
+            <div class="my-4">
+              <p>Sampling results after epoch 1</p>
+              <img src="images/2.0/time_conditioned_sample_epoch_1.png" alt="Sampling Results; 1 epoch" class="img-fluid mx-auto d-block" style="max-width: 50%;">
+            </div>
+
+            <div class="my-4">
+              <p>Sampling results after epoch 5</p>
+              <img src="images/2.0/time_conditioned_sample_epoch_5.png" alt="Sampling Results; 5 epoch" class="img-fluid mx-auto d-block" style="max-width: 50%;">
+            </div>
+
+            <div class="my-4">
+              <p>Sampling results after epoch 10</p>
+              <img src="images/2.0/time_conditioned_sample_epoch_10.png" alt="Sampling Results; 10 epoch" class="img-fluid mx-auto d-block" style="max-width: 50%;">
+            </div>
+
+            <p>The sampling results demonstrated progressive improvement across epochs, with digits becoming more recognizable and well-formed as training progressed.</p>
+          </div>
+        </div>
+
+        <!-- 2.4 Class Conditioning -->
+        <div class="row mb-4">
+          <div class="col-lg-12">
+            <h2>2.4 Adding Class-Conditioning to UNet</h2>
+            <p>To improve results and provide greater control over image generation, the UNet was extended to optionally condition on the digit class (0-9). This required adding two additional FCBlocks to the architecture.</p>
+
+            <p>For the class-conditioning vector c, a one-hot encoding was used instead of a single scalar. To maintain the ability to perform unconditional generation (as required for classifier-free guidance), dropout was implemented where 10% of the time (p<sub>uncond</sub> = 0.1), the class conditioning vector c was dropped by setting it to zero.</p>
+
+            <p>The conditioning was implemented as follows:</p>
+            <ul>
+              <li>Four FCBlocks were created: fc1_t, fc1_c, fc2_t, and fc2_c</li>
+              <li>Time and class embeddings were computed: t1 = fc1_t(t), c1 = fc1_c(c), t2 = fc2_t(t), c2 = fc2_c(c)</li>
+              <li>The embeddings modulated the network: unflatten = c1 * unflatten + t1, up1 = c2 * up1 + t2</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 2.5 Class-Conditioned Training -->
+        <div class="row mb-4">
+          <div class="col-lg-12">
+            <h2>2.5 Training the Class-Conditioned UNet</h2>
+            <p>Training for the class-conditioned model followed the same procedure as the time-only conditioning, with the addition of the conditioning vector c and periodic unconditional generation.</p>
+
+            <div class="text-center my-4">
+              <img src="images/algo3_c_fm.png" class="img-fluid" alt="Class-Conditioned Training" style="max-width: 400px;">
+              <p class="text-muted mt-2">Algorithm B.3: Training Class-Conditioned UNet</p>
+            </div>
+
+            <div class="my-4">
+              <p>Training loss curve for class-conditioned UNet</p>
+              <img src="images/2.0/class_conditioned_unet_training_loss.png" alt="Training Loss Curve" class="img-fluid mx-auto d-block" style="max-width: 100%;">
+            </div>
+          </div>
+        </div>
+
+        <!-- 2.6 Class-Conditioned Sampling -->
+        <div class="row mb-5">
+          <div class="col-lg-12">
+            <h2>2.6 Sampling from the Class-Conditioned UNet</h2>
+            <p>Sampling from the class-conditioned UNet utilized classifier-free guidance with γ = 5.0 to improve generation quality.</p>
+
+            <div class="text-center my-4">
+              <img src="images/algo4_c_fm.png" class="img-fluid" alt="Class-Conditioned Sampling" style="max-width: 400px;">
+              <p class="text-muted mt-2">Algorithm B.4: Sampling from Class-Conditioned UNet</p>
+            </div>
+
+            <div class="my-4">
+              <p>Class-conditioned sampling results after epoch 1</p>
+              <img src="images/2.0/class_conditioned_sample_epoch_1.png" alt="Class-Conditioned Sampling Results; 1 epoch" class="img-fluid mx-auto d-block" style="max-width: 50%;">
+            </div>
+
+            <div class="my-4">
+              <p>Class-conditioned sampling results after epoch 5</p>
+              <img src="images/2.0/class_conditioned_sample_epoch_5.png" alt="Class-Conditioned Sampling Results; 5 epoch" class="img-fluid mx-auto d-block" style="max-width: 50%;">
+            </div>
+
+            <div class="my-4">
+              <p>Class-conditioned sampling results after epoch 10</p>
+              <img src="images/2.0/class_conditioned_sample_epoch_10.png" alt="Class-Conditioned Sampling Results; 10 epoch" class="img-fluid mx-auto d-block" style="max-width: 50%;">
+            </div>
+
+            <div class="my-4">
+              <p>Class-conditioned sampling results after epoch 15</p>
+              <img src="images/2.0/class_conditioned_sample_epoch_15.png" alt="Class-Conditioned Sampling Results; 10 epoch" class="img-fluid mx-auto d-block" style="max-width: 50%;">
+            </div>
+
+            <div class="my-4">
+              <p>Class-conditioned sampling results after epoch 20</p>
+              <img src="images/2.0/class_conditioned_sample_epoch_20.png" alt="Class-Conditioned Sampling Results; 10 epoch" class="img-fluid mx-auto d-block" style="max-width: 50%;">
+            </div>
+
+            <p>Class-conditioning enabled faster convergence, requiring only 10 epochs of training compared to the time-only model. The results demonstrated controlled generation of specific digit classes with high quality.</p>
+
+            <h3>Removing the Learning Rate Scheduler</h3>
+            <div class="my-4">
+              <p>We were able to get rid of the learning rate scheduler by fixing it to initial learning rate 20% less than what it was before. Even though the learning rate is now fixed and smaller, this was compensated for by an increase in training epochs to 20 (although the <strong>results after 10 epochs are already comparable to outputs <em>with</em> the scheduler</strong>).</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section><!-- /Part 2 Section -->
+
+    <!-- Part 3: Bells & Whistles Section 
+    <section id="part3" class="section">
+      <div class="container section-title" data-aos="fade-up" style="max-width: 1200px;">
+        <h2>Part 3: Bells & Whistles</h2>
+      </div>
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100" style="max-width: 1200px;">
+        
+         Optional Extensions
+        <div class="row mb-5">
+          <div class="col-lg-12">
+            <p>Several optional extensions were explored to enhance the capabilities of the flow matching model beyond the baseline requirements.</p>
+
+            <h3>Improving the Time-Conditioned UNet</h3>
+            <p>The time-conditioning only UNet from Part 2.3 showed room for improvement, performing significantly worse than the class-and-time conditioned version. Several approaches were investigated to enhance its performance, including extending the training schedule and making the architecture more expressive.</p>
+
+            <div class="my-4">
+              <p><strong>TODO:</strong> If attempted, insert improved time-conditioning results</p>
+              <div style="border: 2px dashed #ccc; padding: 20px; background-color: #f9f9f9;">
+                <p><em>[If you attempted to improve the time-only UNet, insert visualizations showing the improved results and describe the approach taken (e.g., longer training, architectural modifications, different hyperparameters).]</em></p>
+              </div>
+            </div>
+
+            <h3>Alternative Datasets</h3>
+            <p>The UNet architecture is capable of generating images beyond simple digits. Several alternative datasets were considered for exploration:</p>
+            <ul>
+              <li><strong>SVHN:</strong> Street View House Numbers - still digits but more visually complex</li>
+              <li><strong>Fashion-MNIST:</strong> Grayscale clothing items - maintains simplicity while exploring different content</li>
+              <li><strong>CIFAR-10:</strong> Color images across 10 classes - significantly more challenging</li>
+            </ul>
+
+            <div class="my-4">
+              <p><strong>TODO:</strong> If attempted, insert alternative dataset results</p>
+              <div style="border: 2px dashed #ccc; padding: 20px; background-color: #f9f9f9;">
+                <p><em>[If you trained on alternative datasets, insert samples of generated images and discuss the challenges encountered, modifications made to the architecture or training procedure, and quality of results achieved.]</em></p>
+              </div>
+            </div>
+
+            <h3>Other Creative Extensions</h3>
+            <div class="my-4">
+              <p><strong>TODO:</strong> If attempted, describe other creative explorations</p>
+              <div style="border: 2px dashed #ccc; padding: 20px; background-color: #f9f9f9;">
+                <p><em>[Describe any other creative extensions you implemented, such as interpolation between digits, style transfer, or architectural innovations. Include visualizations and analysis of results.]</em></p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section> Part 3 Section -->
+
+    <!-- Conclusion Section -->
+    <section id="conclusion" class="section">
+      <div class="container section-title" data-aos="fade-up" style="max-width: 1200px;">
+        <h2>Conclusion</h2>
+      </div>
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100" style="max-width: 1200px;">
+        
+        <div class="row mb-5">
+          <div class="col-lg-12">
+            <p>This project successfully demonstrated the implementation and training of flow matching models for generative tasks. Starting with a simple single-step denoiser that proved insufficient for high-quality generation, the work progressed to implementing iterative denoising through flow matching.</p>
+
+            <p>The key findings include:</p>
+            <ul>
+              <li>Single-step denoisers can effectively remove noise at specific trained levels but struggle to generate novel images from pure noise, tending to produce average representations of the training distribution</li>
+              <li>Flow matching with time-conditioning enables iterative refinement from noise to clean images, producing recognizable but imperfect digit generations</li>
+              <li>Adding class-conditioning with classifier-free guidance significantly improves generation quality and convergence speed, enabling controlled generation of specific digit classes</li>
+              <li>The learning rate scheduling strategy plays an important role in training stability and convergence, though simpler alternatives may be viable</li>
+            </ul>
+
+            <p>The progression from unconditional single-step denoising to conditional iterative generation via flow matching illustrates fundamental concepts in modern generative modeling, including the importance of iterative refinement, conditional generation, and guidance techniques for improving sample quality.</p>
+
+            <div class="my-4">
+              <p><b>Personal reflections</b></p>
+                <p><em>This was an amazing project! I learned a lot about the inner-workings of models that for some time now in my research I had only understood as a magic black-box with inputs and outputs. My key takeaways are that conditioning can be as simplea as a multiplication in the network, that CFG is super intuitive (literally translate the noise in the direction of you want!), and that Flow Matching sort-of reminds me of NeRFs in how we're learning a field rather than directly the values themselves.</em></p>
+                <p><em>We've seen that FM and Diffusion can be used to generativeley generate data in distribution; however, in my own research I'm most interestd in how we can use these techniques to generate motion. As a related learning exercise, I wonder if there is a simple motion data set (I'm thinking like a 2D point moving around a simple obstacles) that I can use to train either model to generate novel motion paths around said simple obstacles. I will leave this to future (post-finals hehe) work.</em></p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section><!-- /Conclusion Section -->
+
+    <!-- Acknowledgments Section -->
+    <section id="acknowledgments" class="section">
+      <div class="container" data-aos="fade-up" data-aos-delay="100" style="max-width: 1200px;">
+        
+        <div class="row mb-5">
+          <div class="col-lg-12">
+            <h3>Acknowledgements</h3>
+            <p>This project was developed based on assignments created by <a href="https://ryantabrizi.com/" target="_blank">Ryan Tabrizi</a>, <a href="https://dangeng.github.io/" target="_blank">Daniel Geng</a>, <a href="https://hangg7.com/" target="_blank">Hang Gao</a>, and <a href="https://jingfeng0705.github.io/" target="_blank">Jingfeng Yang</a>, advised by <a href="https://liyueshen.engin.umich.edu/" target="_blank">Liyue Shen</a>, <a href="https://andrewowens.com/" target="_blank">Andrew Owens</a>, <a href="https://people.eecs.berkeley.edu/~kanazawa/" target="_blank">Angjoo Kanazawa</a>, and <a href="https://people.eecs.berkeley.edu/~efros/" target="_blank">Alexei Efros</a>. They give special thanks to <a href="https://mcallisterdavid.com/" target="_blank">David McAllister</a> and <a href="https://songweige.github.io/" target="_blank">Songwei Ge</a> for their helpful feedback and suggestions.</p>
+
+            <p>Implementation utilized PyTorch and the MNIST dataset from torchvision. Training was conducted using GPU resources from Google Colab.</p>
+          </div>
+        </div>
+
+      </div>
+    </section><!-- /Acknowledgments Section -->
+
+
+  </main>
+
+  <footer id="footer" class="footer position-relative">
+    <div class="container">
+      <div class="copyright text-center ">
+        <p>© <span>Copyright 2026.</span> <span>Joel's CS180 Projects.</span></p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scroll Top -->
+  <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i
+      class="bi bi-arrow-up-short"></i></a>
+
+  <!-- Preloader -->
+  <div id="preloader"></div>
+
+  <!-- Vendor JS Files -->
+  <script src="../../assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="../../assets/vendor/php-email-form/validate.js"></script>
+  <script src="../../assets/vendor/aos/aos.js"></script>
+  <script src="../../assets/vendor/typed.js/typed.umd.js"></script>
+  <script src="../../assets/vendor/purecounter/purecounter_vanilla.js"></script>
+  <script src="../../assets/vendor/waypoints/noframework.waypoints.js"></script>
+  <script src="../../assets/vendor/isotope-layout/isotope.pkgd.min.js"></script>
+  <script src="../../assets/vendor/imagesloaded/imagesloaded.pkgd.min.js"></script>
+  <script src="../../assets/vendor/glightbox/js/glightbox.min.js"></script>
+  <script src="../../assets/vendor/swiper/swiper-bundle.min.js"></script>
+
+  <!-- Main JS File -->
+  <script src="../../assets/js/main.js"></script>
+
+</body>
+
+</html>

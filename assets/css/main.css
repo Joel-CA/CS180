@@ -2677,3 +2677,19 @@ section,
 .starter-section {
   /* Add your styles here */
 }
+
+/*--------------------------------------------------------------
+# Caption color overrides for visibility
+--------------------------------------------------------------*/
+/* Ensure image captions and small chips are readable on dark backgrounds */
+.portfolio-info .subtitle,
+.banner-caption,
+.chip,
+.portfolio-info .portfolio-links a {
+  color: #ffffff !important;
+}
+
+/* Slightly increase the max-width for container sections for a more modern, wide layout on project pages */
+.section .container {
+  max-width: 1200px;
+}
