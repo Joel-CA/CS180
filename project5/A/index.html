@@ -213,6 +213,78 @@
       </div>
     </section> <!-- End Hero Section -->
 
+    <!-- Part 0 Section -->
+    <section id="part0" class="section" style="padding: 40px 0;">
+      <div class="container section-title" data-aos="fade-up" style="max-width: 1200px;">
+        <h2>Part 0: Setup</h2>
+      </div>
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100" style="max-width: 1200px;">
+
+        <div class="row mb-5">
+          <div class="col-lg-12">
+            <h3>Using DeepFloyd</h3>
+            <p>We are going to use the <a href="https://huggingface.co/docs/diffusers/api/pipelines/deepfloyd_if" target="_blank">DeepFloyd IF</a> diffusion model. DeepFloyd is a two-stage model: the first stage produces images of size 64 × 64 and the second stage takes those outputs and generates images of size 256 × 256.</p>
+            <h4>Sampling from the Model</h4>
+            <p>The pipeline uses two stages (<code>stage_1</code> and <code>stage_2</code>). First stage samples a low-resolution image, then the second stage upsamples it. Each stage accepts a <code>num_inference_steps</code> parameter that controls quality vs speed.</p>
+
+            <p>Example prompts used in experiments:</p>
+            <ul>
+              <li>visual anagram of snowy mountain and snow fox</li>
+              <li>snowy mountain and snow fox visual anagram</li>
+              <li>hybrid image that looks like a dog from far away but a kitty from up close</li>
+              <li>blond hair professor of computer vision with glasses teaching computer vision magic</li>
+            </ul>
+
+            <p>Below are a few example outputs from the runs used in this project.</p>
+          </div>
+        </div>
+
+        <div class="row mb-4">
+          <div class="col-lg-12">
+            <div style="overflow-x: auto;">
+              <table cellspacing="0" cellpadding="6">
+                <thead>
+                  <tr>
+                    <th>Prompt</th>
+                    <th>20 Steps</th>
+                    <th>500 Steps</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>visual anagram of snowy mountain and snow fox</td>
+                    <td><img src="output_images/visual_anagram_of_snowy_mountain_and_snow_fox.png" alt=""></td>
+                    <td><img src="output_images/visual_anagram_of_snowy_mountain_and_snow_fox2.png" alt=""></td>
+                  </tr>
+                  <tr>
+                    <td>snowy mountain and snow fox visual anagram</td>
+                    <td><img src="output_images/snowy_mountain_and_snow_fox_visual_anagram.png" alt=""></td>
+                    <td><img src="output_images/snowy_mountain_and_snow_fox_visual_anagram2.png" alt=""></td>
+                  </tr>
+                  <tr>
+                    <td>hybrid image that looks like a dog from far away but a kitty from up close</td>
+                    <td><img src="output_images/hybrid_image_that_looks_like_a_dog_from_far_away_but_a_kitty_from_up_close.png" alt=""></td>
+                    <td><img src="output_images/hybrid_image_that_looks_like_a_dog_from_far_away_but_a_kitty_from_up_close2.png" alt=""></td>
+                  </tr>
+                  <tr>
+                    <td>blond hair professor of computer vision with glasses teaching computer vision magic and amazing his students</td>
+                    <td><img src="output_images/blond_hair_professor_of_computer_vision_with_glasses_teaching_computer_vision_magic_and_amazing_his_students.png" alt=""></td>
+                    <td><img src="output_images/blond_hair_professor_of_computer_vision_with_glasses_teaching_computer_vision_magic_and_amazing_his_students2.png" alt=""></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <p>
+These results were interesting to us for a few reasons. Accross all attempts of prompting visual anograms and hybrid images, the results at 20 steps did not capture the desired optical illusion effects at all. Take the two attempts at producing a fox-mountain anogram, for example. At first, both outputs generated some variant of a fox in the foreground of a snowy mountain range background, but no attempt at the anogram optical illusion is noticeable. However, after 500 hundred steps, the fox tail depicted in the output the 'visual anagram of snowy mountain and snow fox' prompt, is drawn with mountain-shaped strokes. Moreover, at 500 steps, the output of the prompt 'snowy mountain and snow fox visual anagram' seemed to "understand" the idea that anograms are related to upsidedown visuals and draws upsidedown mountains. Attempts at a dog-cat hybrid image showed less signs of life as images produced at either number of steps seemed to simply favor one animal or the other, but hardly blend both. In general, images trend toward less realism as the number of steps increases. The output from the prompt 'blond hair professor of computer vision with glasses teaching computer ' exemplifies this, moving from photo-realistic at 20 steps to vector-art-like at 500 steps.
+
+Note: the random seed used for these model outputs was `RANDOM_SEED = 100`.
+</p>
+      </div>
+    </section> <!-- End Part 0 Section -->
+
     <section id="part1" class="section" style="padding: 40px 0;">
       <div class="container" style="max-width: 1200px;">
       <!-- Part 1 Section Title -->
