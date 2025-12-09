@@ -1,0 +1,1467 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>Project 5A: Fun with Diffusion Models!</title>
+
+  <!-- Favicons -->
+  <link href="../assets/img/favicon.png" rel="icon">
+  <link href="../assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&family=Nunito:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+    rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="../assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="../assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="../assets/vendor/aos/aos.css" rel="stylesheet">
+  <link href="../assets/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
+  <link href="../assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
+
+  <!-- Main CSS File -->
+  <link href="../assets/css/main.css" rel="stylesheet">
+  <!-- Math rendering (MathJax) -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+
+<body class="portfolio-details-page">
+  <main class="main">
+    <!-- Page Title -->
+    <div class="page-title dark-background">
+      <div class="container d-lg-flex justify-content-between align-items-center">
+        <h1 class="mb-2 mb-lg-0">
+          <a href="/CS180/" class="navbar-title-link">Joel's CS180 Projects</a>
+        </h1>
+        <nav class="breadcrumbs">
+          <ol>
+            <li><a href="/CS180/">Joel's CS180 Projects</a></li>
+            <li class="current">Project 5</li>
+            <li class="current">A</li>
+          </ol>
+        </nav>
+      </div>
+    </div><!-- End Page Title -->
+    
+    <!-- Hero Section -->
+    <section id="hero" class="section" style="padding: 40px 0;">
+      <div class="section-title text-center">
+          <h2>Project 5A: Fun With Diffusion Models!</h2>
+          <p style="max-width: 900px; margin: 0 auto;">We will begin by playing around with diffusion models, implement diffusion sampling loops, and using them for other tasks such as inpainting and creating optical illusions.</p>
+      </div>
+
+      <style>
+          /* General Caption Styling */
+          .banner-caption {
+              margin-top: 15px;
+              font-family: serif;
+              font-size: 18px;
+              font-weight: bold;
+              color: hsl(0, 0%, 100%);
+              min-height: 25px; /* Prevents layout jump */
+          }
+
+          /* --- TEXT SWAPPING UTILITY --- */
+          /* By default: hide hover text, show normal text */
+          .swap-text .on-hover { display: none; }
+          .swap-text .not-hover { display: inline; }
+
+
+          /* --- IMAGE 1: SWAP STYLES --- */
+          .swap-parent {
+              display: inline-block;
+              cursor: pointer;
+          }
+
+          .swap-container {
+              position: relative;
+              width: 200px;
+              display: inline-block; 
+          }
+
+          /* Front image (Visible by default) */
+          .swap-img-front {
+              position: relative;
+              display: block;
+              width: 100%;
+              height: auto;
+              transition: opacity 0.5s ease;
+              z-index: 2;
+              background: white; 
+          }
+
+          /* Back image (Visible on hover) */
+          .swap-img-back {
+              position: absolute;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              object-fit: contain;
+              z-index: 1;
+          }
+
+          /* HOVER TRIGGERS FOR IMAGE 1 */
+          /* Fade out front image */
+          .swap-parent:hover .swap-img-front { opacity: 0; }
+          
+          /* Swap Text */
+          .swap-parent:hover .swap-text .on-hover { display: inline; }
+          .swap-parent:hover .swap-text .not-hover { display: none; }
+
+
+          /* --- IMAGE 2: ANAGRAM STYLES --- */
+          .banner-anagram-container {
+              display: inline-block;
+              cursor: pointer;
+          }
+
+          .banner-anagram-img {
+              width: 200px;
+              height: auto;
+              transition: transform 1.5s ease-in-out;
+              display: block;
+              transform: rotate(0deg);
+          }
+
+          .banner-anagram-img.rotated { transform: rotate(180deg); }
+
+          /* HOVER TRIGGERS FOR IMAGE 2 */
+          .banner-anagram-container:hover .banner-anagram-img.rotated { transform: rotate(0deg); }
+          .banner-anagram-container:hover .swap-text .on-hover { display: inline; }
+          .banner-anagram-container:hover .swap-text .not-hover { display: none; }
+
+
+          /* --- IMAGE 3: HYBRID STYLES --- */
+          .banner-hybrid-parent {
+              display: inline-block;
+              cursor: zoom-in;
+          }
+          
+          .banner-hybrid-wrapper {
+              width: 200px;
+              height: 200px;
+              overflow: hidden;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+          }
+
+          .banner-hybrid-img {
+              object-fit: contain;
+              width: 100%;
+              height: 100%;
+              transform: scale(0.1);
+              transition: transform 1.25s ease-in-out;
+          }
+
+          /* HOVER TRIGGERS FOR IMAGE 3 */
+          .banner-hybrid-parent:hover .banner-hybrid-img { transform: scale(1); }
+          .banner-hybrid-parent:hover { cursor: zoom-out; }
+          .banner-hybrid-parent:hover .swap-text .on-hover { display: inline; }
+          .banner-hybrid-parent:hover .swap-text .not-hover { display: none; }
+      </style>
+
+      <div style="text-align: center;">
+          <table cellpadding="10" cellspacing="0" style="margin: 0 auto; vertical-align: top;">
+              <tr>
+                  <td style="vertical-align: top;">
+                      <div class="swap-parent">
+                          <div class="swap-container">
+                              <img src="minecraft-1639513933156.webp" alt="Original" class="swap-img-front" width="200">
+                              
+                              <img src="banner_images/mc20 (1).png" alt="After Diffusion" class="swap-img-back">
+                          </div>
+                          <div class="banner-caption swap-text">
+                              <span class="on-hover">After Diffusion</span><span class="not-hover">Original</span>
+                          </div>
+                      </div>
+                  </td>
+
+                  <td style="vertical-align: top;">
+                      <div class="banner-anagram-container">
+                          <img src="banner_images/fox+mountains-anogram (1).png" alt="Image 2" class="banner-anagram-img rotated">
+                          <div class="banner-caption swap-text">
+                              Anogram of a <span class="on-hover">snow fox</span><span class="not-hover">mountain</span>
+                          </div>
+                      </div>
+                  </td>
+
+                  <td style="vertical-align: top;">
+                      <div class="banner-hybrid-parent">
+                          <div class="banner-hybrid-wrapper">
+                              <img src="banner_images/cat+man-hybrid (1).png" alt="Image 3" class="banner-hybrid-img">
+                          </div>
+                          <div class="banner-caption swap-text">
+                              Lithogram of a <span class="on-hover">Man</span><span class="not-hover">Cat</span>
+                          </div>
+                      </div>
+                  </td>
+
+                  <td style="vertical-align: top;">
+                      <img src="banner_images/pic_w_kanazawa_transition_to_infill.gif" alt="Image 4" width="200" style="display:block;">
+                      <div class="banner-caption">Mask Filling +upsampling</div>
+                  </td>
+              </tr>
+          </table>
+      </div>
+    </section> <!-- End Hero Section -->
+
+    <section id="part1" class="section" style="padding: 40px 0;">
+      <div class="container" style="max-width: 900px;">
+      <!-- Part 1 Section Title -->
+      <div class="section-title" data-aos="fade-up">
+        <h2>Part 1: Diffusion Model Experiments</h2>
+        <style>
+        .small-space p { margin: 0 0 0.45rem 0; }
+        .small-space h3 { margin: 0.35rem 0; }
+        .small-space figure { margin: 0.5rem 0; text-align: center; }
+        .small-space img { max-width: 100%; height: auto; }
+        </style>
+
+        <div class="small-space">
+          <div style="text-align: left;">
+            <p>In this part we introduce our own "sampling loops" that use the pretrained DeepFloyd denoisers. If done correctly, they will produce high quality images such as the ones generated above.</p>
+            <p>Once complete, we will then modify these sampling loops to solve different tasks such as inpainting or producing optical illusions.</p>
+            <h3>Diffusion Models Primer</h3>
+          </div>
+          <figure>
+            <img src="diffusion_figure.png" alt="DDPM Markov diagram" class="img-fluid" style="max-width:480px;">
+            <figcaption><a href="https://arxiv.org/abs/2006.11239" target="_blank" rel="noopener">Image Source</a></figcaption>
+          </figure>
+          <div style="text-align: left;">
+            <p>Starting with a clean image, <code>x<sub>0</sub></code>, we can iteratively add noise to an image, obtaining progressively more noisy versions of the image, <code>x<sub>t</sub></code>, until we're left with basically pure noise at timestep <code>T</code>. When <code>t = 0</code> we have a clean image, and for larger <code>t</code> more noise is present in the image.</p>
+            <p>A diffusion model tries to reverse this process by denoising the image. Given a noisy image <code>x<sub>t</sub></code> and the timestep <code>t</code>, the model predicts the noise in the image. With the predicted noise we can either completely remove the noise to obtain an estimate of <code>x<sub>0</sub></code>, or remove only a portion to obtain an estimate of <code>x<sub>t-1</sub></code> with slightly less noise.</p>
+            <p>To generate images from the diffusion model (sampling), we start with pure noise at timestep <code>T</code> sampled from a Gaussian distribution, denoted <code>x<sub>T</sub></code>. We then predict and remove part of the noise to obtain <code>x<sub>T-1</sub></code>. Repeating this process until we arrive at <code>x<sub>0</sub></code> yields a clean image.</p>
+            <p>For the DeepFloyd models, <code>T = 1000</code>.</p>
+            <h3>Setup</h3>
+            <p>The exact amount of noise added at each step is dictated by noise coefficients, <code>ᾱ<sub>t</sub></code>, which were chosen by the people who trained DeepFloyd. The number of coefficients is the same as the number of sampling steps.</p>
+          </div>
+          <div style="text-align: left;">
+            <p>We will use our favorite Campanilie as a test image!</p>
+          </div>
+          <div class="text-center my-3">
+            <img src="output_images/cambinelle/campanile_resized.png" width="200"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1.1 Implementing the forward process -->
+      <div class="row mb-4">
+        <div class="col-lg-12">
+          <h2>1.1 Implementing the forward process</h2>
+          <p>A key part of diffusion is the forward process, which takes a clean image and adds noise to it. The forward process is defined by:</p>
+          <p class="text-center"><em>\( q(x_t \mid x_0) = \mathcal{N}\!\left(x_t; \sqrt{\bar\alpha_t}\, x_0,\; (1-\bar\alpha_t)I\right) \)</em></p>
+          <p class="text-center"><em>\( x_t = \sqrt{\bar\alpha_t}\, x_0 + \sqrt{1-\bar\alpha_t}\,\epsilon,\quad \epsilon \sim \mathcal{N}(0,I) \)</em></p>
+          <p>We will need the <code>alphas_cumprod</code> variable which contains \( \bar\alpha_t \) for all t. We will run the forward process on the Campanile test image with t in [250, 500, 750].</p>
+        </div>
+      </div>
+
+      <div class="row mb-4">
+        <div class="col-lg-12">
+          <div style="overflow-x: auto;">
+            <table style="margin: 0 auto; text-align: center; border-collapse: separate; border-spacing: 15px 0;">
+              <tr>
+                <th>Berkeley Campanile</th>
+                <th>Noisy t=250</th>
+                <th>Noisy t=500</th>
+                <th>Noisy t=750</th>
+              </tr>
+              <tr>
+                <td><img src="output_images/cambinelle/campanile_resized.png" width="250"/></td>
+                <td><img src="output_images/cambinelle/cambinelle_noiselevel_250.png" width="250"/></td>
+                <td><img src="output_images/cambinelle/cambinelle_noiselevel_500.png" width="250"/></td>
+                <td><img src="output_images/cambinelle/cambinelle_noiselevel_750.png" width="250"/></td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1.2 Classical Denoising -->
+      <div class="row mb-4">
+        <div class="col-lg-12">
+          <h2>1.2 Classical Denoising</h2>
+          <p>Try to denoise the noisy images (t = [250,500,750]) using classical Gaussian blur filtering. This usually performs poorly compared to learned denoisers.</p>
+        </div>
+      </div>
+
+      <div class="row mb-4">
+        <div class="col-lg-12">
+          <div style="overflow-x: auto;">
+            <table style="margin: 0 auto; text-align: center; border-collapse: separate; border-spacing: 15px 0;">
+              <tr>
+                <th>Noisy t=250</th>
+                <th>Noisy t=500</th>
+                <th>Noisy t=750</th>
+              </tr>
+              <tr>
+                <td><img src="output_images/cambinelle/cambinelle_noiselevel_250.png" width="250"/></td>
+                <td><img src="output_images/cambinelle/cambinelle_noiselevel_500.png" width="250"/></td>
+                <td><img src="output_images/cambinelle/cambinelle_noiselevel_750.png" width="250"/></td>
+              </tr>
+              <tr>
+                <th>Denoised t=250</th>
+                <th>Denoised t=500</th>
+                <th>Denoised t=750</th>
+              </tr>
+              <tr>
+                <td><img src="output_images/cambinelle/cambinelle_noiselevel_250_classical_denoise.png" width="250"/></td>
+                <td><img src="output_images/cambinelle/cambinelle_noiselevel_500_classical_denoise.png" width="250"/></td>
+                <td><img src="output_images/cambinelle/cambinelle_noiselevel_750_classical_denoise.png" width="250"/></td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1.3 Implementing One Step Denoising -->
+      <div class="row mb-4">
+        <div class="col-lg-12">
+          <h2>1.3 Implementing One Step Denoising</h2>
+          <p>Use the pretrained UNet (available as <code>stage_1.unet</code>) to estimate noise \( \epsilon \) in an image and recover the denoised image via the closed-form relation from the forward process.</p>
+          <p>For the noisy images from 1.2 (t = [250,500,750]) we will estimate noise with the UNet then recover the predicted denoised images.</p>
+        </div>
+      </div>
+
+      <div class="row mb-4">
+        <div class="col-lg-12">
+          <div style="overflow-x: auto;">
+            <table style="margin: 0 auto; text-align: center; border-collapse: separate; border-spacing: 15px 0;">
+              <tr>
+                <th>Noisy t=250</th>
+                <th>Noisy t=500</th>
+                <th>Noisy t=750</th>
+              </tr>
+              <tr>
+                <td><img src="output_images/cambinelle/cambinelle_noiselevel_250.png" width="250"/></td>
+                <td><img src="output_images/cambinelle/cambinelle_noiselevel_500.png" width="250"/></td>
+                <td><img src="output_images/cambinelle/cambinelle_noiselevel_750.png" width="250"/></td>
+              </tr>
+              <tr>
+                <th>Denoised t=250</th>
+                <th>Denoised t=500</th>
+                <th>Denoised t=750</th>
+              </tr>
+              <tr>
+                <td><img src="output_images/cambinelle/cambinelle_noiselevel_250_unet_denoise.png" width="250"/></td>
+                <td><img src="output_images/cambinelle/cambinelle_noiselevel_500_unet_denoise.png" width="250"/></td>
+                <td><img src="output_images/cambinelle/cambinelle_noiselevel_750_unet_denoise.png" width="250"/></td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1.4 Implementing Iterative Denoising -->
+      <div class="row mb-4">
+        <div class="col-lg-12">
+          <h2>1.4 Implementing Iterative Denoising</h2>
+          <p>We implement iterative denoising (possibly skipping steps using <code>strided_timesteps</code>) to efficiently denoise from large t to 0. The iteration uses the linear interpolation formula and optional variance term.</p>
+        </div>
+      </div>
+
+      <div class="row mb-4">
+        <div class="col-lg-12">
+          <div style="overflow-x: auto;">
+            <table style="margin: 0 auto; text-align: center; border-collapse: separate; border-spacing: 15px 0;">
+              <tr>
+                <td style="vertical-align: top; width: 18%;">
+                  <img src="output_images/cambinelle/iteratively_denoised_campanile_t90.png" style="width: 100%; height: auto;">
+                  <p style="margin-top: 5px;">Noisy<br>Campanile<br>at t=90</p>
+                </td>
+                <td style="vertical-align: top; width: 18%;">
+                  <img src="output_images/cambinelle/iteratively_denoised_campanile_t240.png" style="width: 100%; height: auto;">
+                  <p style="margin-top: 5px;">Noisy<br>Campanile<br>at t=240</p>
+                </td>
+                <td style="vertical-align: top; width: 18%;">
+                  <img src="output_images/cambinelle/iteratively_denoised_campanile_t390.png" style="width: 100%; height: auto;">
+                  <p style="margin-top: 5px;">Noisy<br>Campanile<br>at t=390</p>
+                </td>
+                <td style="vertical-align: top; width: 18%;">
+                  <img src="output_images/cambinelle/iteratively_denoised_campanile_t540.png" style="width: 100%; height: auto;">
+                  <p style="margin-top: 5px;">Noisy<br>Campanile<br>at t=540</p>
+                </td>
+                <td style="vertical-align: top; width: 18%;">
+                  <img src="output_images/cambinelle/iteratively_denoised_campanile_t690.png" style="width: 100%; height: auto;">
+                  <p style="margin-top: 5px;">Noisy<br>Campanile<br>at t=690</p>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mb-4">
+        <div class="col-lg-12">
+          <div style="overflow-x: auto;">
+            <table style="margin: 0 auto; text-align: center; border-collapse: separate; border-spacing: 20px 0;"> 
+              <tr>
+                <td style="vertical-align: top; width: 22%;">
+                  <img src="output_images/cambinelle/campanile_resized.png" style="width: 100%; height: auto;">
+                  <p style="margin-top: 5px;">Original</p>
+                </td>
+                <td style="vertical-align: top; width: 22%;">
+                  <img src="output_images/cambinelle/iteratively_denoised_campanile.png" style="width: 100%; height: auto;">
+                  <p style="margin-top: 5px;">Iteratively<br>Denoised<br>Campanile</p>
+                </td>
+                <td style="vertical-align: top; width: 22%;">
+                  <img src="output_images/cambinelle/one-step_denoised_campanile.png" style="width: 100%; height: auto;">
+                  <p style="margin-top: 5px;">One-Step<br>Denoised<br>Campanile</p>
+                </td>
+                <td style="vertical-align: top; width: 22%;">
+                  <img src="output_images/cambinelle/gaussain_blurred_campanile.png" style="width: 100%; height: auto;">
+                  <p style="margin-top: 5px;">Gaussian Blurred<br>Campanile</p>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1.5 Diffusion Model Sampling -->
+      <div class="row mb-4">
+        <div class="col-lg-12">
+          <h2>1.5 Diffusion Model Sampling</h2>
+          <p>We can also generate images from scratch by denoising pure noise (set <code>i_start = 0</code>). Below are 5 samples from the prompt <code>"a high quality photo"</code>.</p>
+        </div>
+      </div>
+
+      <div class="row mb-4">
+        <div class="col-lg-12">
+          <div style="overflow-x: auto;">
+            <table style="margin: 0 auto; text-align: center; border-collapse: separate; border-spacing: 15px 0; width: 100%;">
+              <tr>
+                <td style="vertical-align: top; width: 18%;">
+                  <img src="output_images/1.5/sampled_image1.png" style="width: 100%; min-width: 150px; height: auto;">
+                  <p style="margin-top: 5px;">Sample 1</p>
+                </td>
+                <td style="vertical-align: top; width: 18%;">
+                  <img src="output_images/1.5/sampled_image2.png" style="width: 100%; min-width: 150px; height: auto;">
+                  <p style="margin-top: 5px;">Sample 2</p>
+                </td>
+                <td style="vertical-align: top; width: 18%;">
+                  <img src="output_images/1.5/sampled_image3.png" style="width: 100%; min-width: 150px; height: auto;">
+                  <p style="margin-top: 5px;">Sample 3</p>
+                </td>
+                <td style="vertical-align: top; width: 18%;">
+                  <img src="output_images/1.5/sampled_image4.png" style="width: 100%; min-width: 150px; height: auto;">
+                  <p style="margin-top: 5px;">Sample 4</p>
+                </td>
+                <td style="vertical-align: top; width: 18%;">
+                  <img src="output_images/1.5/sampled_image5.png" style="width: 100%; min-width: 150px; height: auto;">
+                  <p style="margin-top: 5px;">Sample 5</p>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1.6 Classifier Free Guidance -->
+      <div class="row mb-4">
+        <div class="col-lg-12">
+          <h2>1.6 Classifier Free Guidance</h2>
+          <p>Classifier-Free Guidance (CFG) improves image quality by interpolating between unconditional and conditional noise estimates. Given &epsilon;<sub>c</sub> (conditional) and &epsilon;<sub>u</sub> (unconditional):</p>
+          <p class="text-center"><em>\( \epsilon = \epsilon_u + \gamma\left(\epsilon_c - \epsilon_u\right) \)</em></p>
+          <p>Setting &gamma; &gt; 1 typically increases image quality at the cost of diversity. For the unconditional estimate we pass an empty prompt embedding.</p>
+        </div>
+      </div>
+
+      <div class="row mb-4">
+        <div class="col-lg-12">
+          <div style="overflow-x: auto;">
+            <table style="margin: 0 auto; text-align: center; border-collapse: separate; border-spacing: 15px 0; width: 100%;"> 
+              <tr>
+                <td style="vertical-align: top; width: 18%;">
+                  <img src="output_images/1.6/cfg_imge1.png" style="width: 100%; min-width: 150px; height: auto;">
+                  <p style="margin-top: 5px;">Sample 1 with CFG</p>
+                </td>
+                <td style="vertical-align: top; width: 18%;">
+                  <img src="output_images/1.6/cfg_imge2.png" style="width: 100%; min-width: 150px; height: auto;">
+                  <p style="margin-top: 5px;">Sample 2 with CFG</p>
+                </td>
+                <td style="vertical-align: top; width: 18%;">
+                  <img src="output_images/1.6/cfg_imge3.png" style="width: 100%; min-width: 150px; height: auto;">
+                  <p style="margin-top: 5px;">Sample 3 with CFG</p>
+                </td>
+                <td style="vertical-align: top; width: 18%;">
+                  <img src="output_images/1.6/cfg_imge4.png" style="width: 100%; min-width: 150px; height: auto;">
+                  <p style="margin-top: 5px;">Sample 4 with CFG</p>
+                </td>
+                <td style="vertical-align: top; width: 18%;">
+                  <img src="output_images/1.6/cfg_imge5.png" style="width: 100%; min-width: 150px; height: auto;">
+                  <p style="margin-top: 5px;">Sample 5 with CFG</p>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1.7 Image-to-image Translation -->
+      <div class="row mb-4">
+        <div class="col-lg-12">
+          <h2>1.7 Image-to-image Translation</h2>
+          <p>In part 1.4, we take a real image, add noise to it, and then denoise. This effectively allows us to make edits to existing images. The more noise we add, the larger the edit will be. This works because in order to denoise an image, the diffusion model must to some extent "hallucinate" new things -- the model has to be "creative." Another way to think about it is that the denoising process "forces" a noisy image back onto the manifold of natural images.</p>
+          <p>Here, we're going to take the original Campanile image, noise it a little, and force it back onto the image manifold without any conditioning. Effectively, we're going to get an image that is similar to the Campanile (with a low-enough noise level). This follows the <a href="https://sde-image-editing.github.io/" target="_blank">SDEdit</a> algorithm.</p>
+          <p>Lets perform edits of the Campanile image, using the given prompt at noise levels [1, 3, 5, 7, 10, 20] with the conditional text prompt <code>"a high quality photo"</code>:</p>
+        </div>
+      </div>
+
+      <!-- SDEdit Results - Campanile -->
+      <div class="row mb-5">
+        <div class="col-lg-12">
+          <div style="overflow-x: auto;">
+            <table style="margin: 0 auto; text-align: center; border-collapse: separate; border-spacing: 15px 0;">
+              <tr>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/i_star_1.png" style="width: 150px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 16px;">
+                    SDEdit with<br>
+                    <span class="chip">i_start=1</span>
+                  </p>
+                </td>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/i_star_3.png" style="width: 150px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 16px;">
+                    SDEdit with<br>
+                    <span class="chip">i_start=3</span>
+                  </p>
+                </td>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/i_star_5.png" style="width: 150px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 16px;">
+                    SDEdit with<br>
+                    <span class="chip">i_start=5</span>
+                  </p>
+                </td>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/i_star_7.png" style="width: 150px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 16px;">
+                    SDEdit with<br>
+                    <span class="chip">i_start=7</span>
+                  </p>
+                </td>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/i_star_10.png" style="width: 150px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 16px;">
+                    SDEdit with<br>
+                    <span class="chip">i_start=10</span>
+                  </p>
+                </td>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/i_star_20.png" style="width: 150px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 16px;">
+                    SDEdit with<br>
+                    <span class="chip">i_start=20</span>
+                  </p>
+                </td>
+                <td style="vertical-align: top;">
+                  <img src="output_images/cambinelle/campanile_resized.png" style="width: 150px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 16px;">
+                    Original<br>Campanile
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </div>
+          <p class="mt-4">And here it is again on 2 additional test images, using the same procedure:</p>
+        </div>
+      </div>
+
+      <!-- SDEdit Results - Bear -->
+      <div class="row mb-3">
+        <div class="col-lg-12">
+          <div style="overflow-x: auto;">
+            <table style="margin: 0 auto; text-align: center; border-collapse: separate; border-spacing: 15px 0;">
+              <tr>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/bear_1.png" style="width: 150px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 16px;">
+                    SDEdit with<br>
+                    <span class="chip">i_start=1</span>
+                  </p>
+                </td>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/bear_3.png" style="width: 150px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 16px;">
+                    SDEdit with<br>
+                    <span class="chip">i_start=3</span>
+                  </p>
+                </td>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/bear_5.png" style="width: 150px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 16px;">
+                    SDEdit with<br>
+                    <span class="chip">i_start=5</span>
+                  </p>
+                </td>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/bear_7.png" style="width: 150px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 16px;">
+                    SDEdit with<br>
+                    <span class="chip">i_start=7</span>
+                  </p>
+                </td>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/bear_10.png" style="width: 150px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 16px;">
+                    SDEdit with<br>
+                    <span class="chip">i_start=10</span>
+                  </p>
+                </td>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/bear_20.png" style="width: 150px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 16px;">
+                    SDEdit with<br>
+                    <span class="chip">i_start=20</span>
+                  </p>
+                </td>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/bear_og.png" style="width: 150px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 16px;">
+                    Original<br>Bear
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- SDEdit Results - Cat -->
+      <div class="row mb-5">
+        <div class="col-lg-12">
+          <div style="overflow-x: auto;">
+            <table style="margin: 0 auto; text-align: center; border-collapse: separate; border-spacing: 15px 0;">
+              <tr>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/cat_1.png" style="width: 150px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 16px;">
+                    SDEdit with<br>
+                    <span class="chip">i_start=1</span>
+                  </p>
+                </td>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/cat_3.png" style="width: 150px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 16px;">
+                    SDEdit with<br>
+                    <span class="chip">i_start=3</span>
+                  </p>
+                </td>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/cat_5.png" style="width: 150px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 16px;">
+                    SDEdit with<br>
+                    <span class="chip">i_start=5</span>
+                  </p>
+                </td>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/cat_7.png" style="width: 150px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 16px;">
+                    SDEdit with<br>
+                    <span class="chip">i_start=7</span>
+                  </p>
+                </td>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/cat_10.png" style="width: 150px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 16px;">
+                    SDEdit with<br>
+                    <span class="chip">i_start=10</span>
+                  </p>
+                </td>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/cat_20.png" style="width: 150px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 16px;">
+                    SDEdit with<br>
+                    <span class="chip">i_start=20</span>
+                  </p>
+                </td>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/cat_og.png" style="width: 150px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 16px;">
+                    Original<br>Cat
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1.7.1 Editing Hand-Drawn and Web Images -->
+      <div class="row mb-4">
+        <div class="col-lg-12">
+          <h3>1.7.1 Editing Hand-Drawn and Web Images</h3>
+          <p>This procedure works particularly well if we start with a nonrealistic image (e.g. painting, a sketch, some scribbles) and project it onto the natural image manifold.</p>
+          <p>Lets experiment by starting with hand-drawn and other non-realistic images and see how we can get them onto the natural image manifold in fun ways.</p>
+        </div>
+      </div>
+
+      <!-- Minecraft Cover Art -->
+      <div class="row mb-5">
+        <div class="col-lg-12">
+          <div style="overflow-x: auto;">
+            <table style="margin: 0 auto; text-align: center; border-collapse: separate; border-spacing: 15px 0;">
+              <tr>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/mc1.png" style="width: 150px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 16px;">
+                    SDEdit with<br>
+                    <span class="chip">i_start=1</span>
+                  </p>
+                </td>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/mc3.png" style="width: 150px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 16px;">
+                    SDEdit with<br>
+                    <span class="chip">i_start=3</span>
+                  </p>
+                </td>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/mc5.png" style="width: 150px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 16px;">
+                    SDEdit with<br>
+                    <span class="chip">i_start=5</span>
+                  </p>
+                </td>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/mc7.png" style="width: 150px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 16px;">
+                    SDEdit with<br>
+                    <span class="chip">i_start=7</span>
+                  </p>
+                </td>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/mc10.png" style="width: 150px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 16px;">
+                    SDEdit with<br>
+                    <span class="chip">i_start=10</span>
+                  </p>
+                </td>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/mc20.png" style="width: 150px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 16px;">
+                    SDEdit with<br>
+                    <span class="chip">i_start=20</span>
+                  </p>
+                </td>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/mc.png" style="width: 150px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 16px;">
+                    Original<br>Minecraft Cover art
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hand-drawn Space Scene -->
+      <div class="row mb-3">
+        <div class="col-lg-12">
+          <p>Original hand-drawn image:</p>
+          <div class="text-center my-3">
+            <img src="output_images/1.7/myImage.png" style="width: 500px; max-width: 100%; height: auto;">
+          </div>
+        </div>
+      </div>
+
+      <div class="row mb-5">
+        <div class="col-lg-12">
+          <div style="overflow-x: auto;">
+            <table style="margin: 0 auto; text-align: center; border-collapse: separate; border-spacing: 10px 0;">
+              <tr>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/draw_im_1.png" style="width: 120px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 14px;">
+                    <span class="chip">i_start=1</span>
+                  </p>
+                </td>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/draw_im_3.png" style="width: 120px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 14px;">
+                    <span class="chip">i_start=3</span>
+                  </p>
+                </td>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/draw_im_5.png" style="width: 120px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 14px;">
+                    <span class="chip">i_start=5</span>
+                  </p>
+                </td>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/draw_im_7.png" style="width: 120px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 14px;">
+                    <span class="chip">i_start=7</span>
+                  </p>
+                </td>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/draw_im_10.png" style="width: 120px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 14px;">
+                    <span class="chip">i_start=10</span>
+                  </p>
+                </td>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/draw_im_15.png" style="width: 120px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 14px;">
+                    <span class="chip">i_start=15</span>
+                  </p>
+                </td>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/draw_im_17.png" style="width: 120px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 14px;">
+                    <span class="chip">i_start=17</span>
+                  </p>
+                </td>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/draw_im_20.png" style="width: 120px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 14px;">
+                    <span class="chip">i_start=20</span>
+                  </p>
+                </td>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/drawn_im.png" style="width: 120px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 14px;">
+                    Original<br>hand-drawn space scene
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hand-drawn Fruit -->
+      <div class="row mb-3">
+        <div class="col-lg-12">
+          <p>Original hand-drawn image:</p>
+          <div class="text-center my-3">
+            <img src="output_images/1.7/myImage2.png" style="width: 500px; max-width: 100%; height: auto;">
+          </div>
+        </div>
+      </div>
+
+      <div class="row mb-5">
+        <div class="col-lg-12">
+          <div style="overflow-x: auto;">
+            <table style="margin: 0 auto; text-align: center; border-collapse: separate; border-spacing: 15px 0;">
+              <tr>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/fruit1.png" style="width: 150px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 16px;">
+                    SDEdit with<br>
+                    <span class="chip">i_start=1</span>
+                  </p>
+                </td>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/fruit3.png" style="width: 150px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 16px;">
+                    SDEdit with<br>
+                    <span class="chip">i_start=3</span>
+                  </p>
+                </td>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/fruit5.png" style="width: 150px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 16px;">
+                    SDEdit with<br>
+                    <span class="chip">i_start=5</span>
+                  </p>
+                </td>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/fruit7.png" style="width: 150px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 16px;">
+                    SDEdit with<br>
+                    <span class="chip">i_start=7</span>
+                  </p>
+                </td>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/fruit10.png" style="width: 150px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 16px;">
+                    SDEdit with<br>
+                    <span class="chip">i_start=10</span>
+                  </p>
+                </td>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/fruit20.png" style="width: 150px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 16px;">
+                    SDEdit with<br>
+                    <span class="chip">i_start=20</span>
+                  </p>
+                </td>
+                <td style="vertical-align: top;">
+                  <img src="output_images/1.7/fruit.png" style="width: 150px; height: auto;">
+                  <p style="margin-top: 5px; font-size: 16px;">
+                    Original<br>hand drawn fruit
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1.7.2 Inpainting -->
+      <div class="row mb-4">
+        <div class="col-lg-12">
+          <h3>1.7.2 Inpainting</h3>
+          <p>We can use the same procedure to implement inpainting (following the <a href="https://arxiv.org/abs/2201.09865" target="_blank">RePaint</a> paper). That is, given an image x<sub>orig</sub>, and a binary mask <strong>m</strong>, we can create a new image that has the same content where <strong>m</strong> is 0, but new content wherever <strong>m</strong> is 1.</p>
+          <p>To do this, we can run the diffusion denoising loop. But at every step, after obtaining x<sub>t</sub>, we "force" x<sub>t</sub> to have the same pixels as x<sub>orig</sub> where <strong>m</strong> is 0, i.e.:</p>
+          <p class="text-center"><em>x<sub>t</sub> ← <strong>m</strong> x<sub>t</sub> + (1 - <strong>m</strong>) forward(x<sub>orig</sub>, t)</em> ... (5)</p>
+          <p>Essentially, we leave everything inside the edit mask alone, but we replace everything outside the edit mask with our original image -- with the correct amount of noise added for timestep t.</p>
+          <p>Here are the results on our Campanile picture as well as a few others:</p>
+        </div>
+      </div>
+
+      <!-- Inpainting - Campanile -->
+      <div class="row mb-5">
+        <div class="col-lg-12">
+          <div style="overflow-x: auto;">
+            <table style="width: 100%; text-align: center; border-collapse: collapse; font-family: serif; font-size: 18px;">
+              <tr>
+                <td style="padding: 5px;">
+                  <img src="output_images/cambinelle/campanile_resized.png" alt="Campanile" style="width: 100%; max-width: 200px;">
+                  <div style="margin-top: 5px;">Campanile</div>
+                </td>
+                <td style="padding: 5px;">
+                  <img src="output_images/1.7.2/campanile_mask.png" alt="Mask" style="width: 100%; max-width: 200px;">
+                  <div style="margin-top: 5px;">Mask</div>
+                </td>
+                <td style="padding: 5px;">
+                  <img src="output_images/1.7.2/campanile_toReplace.png" alt="Hole to Fill" style="width: 100%; max-width: 200px;">
+                  <div style="margin-top: 5px;">Hole to Fill</div>
+                </td>
+                <td style="padding: 5px;">
+                  <img src="output_images/1.7.2/inpainted_campanille3.png" alt="Campanile" style="width: 100%; max-width: 200px;">
+                  <div style="margin-top: 5px;">Campanile Inpainted</div>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Inpainting - Cat Bin -->
+      <div class="row mb-3">
+        <div class="col-lg-12">
+          <div class="text-center my-3">
+            <img src="cat_bin.jpg" alt="Cat Bin Original" style="width: 100%; max-width: 200px;">
+            <p>Original Cat Bin photos</p>
+          </div>
+        </div>
+      </div>
+      <!-- Continuation of 1.7.2 Inpainting - Cat Bin (completing the table) -->
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; text-align: center; border-collapse: collapse; font-family: serif; font-size: 18px;">
+          <tr>
+            <td style="padding: 5px;">
+              <img src="output_images/1.7.2/cat_bin_processed.png" alt="Cat Bin" style="width: 100%; max-width: 200px;">
+              <div style="margin-top: 5px;">Cat Bin</div>
+            </td>
+            <td style="padding: 5px;">
+              <img src="output_images/1.7.2/cat_bin_mask_processed.png" alt="Mask" style="width: 100%; max-width: 200px;">
+              <div style="margin-top: 5px;">Mask</div>
+            </td>
+            <td style="padding: 5px;">
+              <img src="output_images/1.7.2/cat_bin_toReplace.png" alt="Hole to Fill" style="width: 100%; max-width: 200px;">
+              <div style="margin-top: 5px;">Hole to Fill</div>
+            </td>
+            <td style="padding: 5px;">
+              <img src="output_images/1.7.2/cat_bin_inpaint.png" alt="Cat Bin Inpainted" style="width: 100%; max-width: 200px;">
+              <div style="margin-top: 5px;">Cat Bin Inpainted</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- Inpainting - Kanazawa -->
+      <div class="row mb-3 mt-5">
+        <div class="col-lg-12">
+          <div class="text-center my-3">
+            <img src="pic_w_kanazawa.jpg" alt="Kanazawa Original" style="width: 100%; max-width: 300px;">
+            <p>Original group pic with Kanazawa</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mb-5">
+        <div class="col-lg-12">
+          <div style="overflow-x: auto;">
+            <table style="width: 100%; text-align: center; border-collapse: collapse; font-family: serif; font-size: 18px;">
+              <tr>
+                <td style="padding: 5px;">
+                  <img src="output_images/1.7.2/pic_w_kanazawa_processed.png" alt="Pic w/Kanazawa" style="width: 100%; max-width: 200px;">
+                  <div style="margin-top: 5px;">Pic w/Kanazawa</div>
+                </td>
+                <td style="padding: 5px;">
+                  <img src="output_images/1.7.2/pic_w_kanazawa_mask_processed.png" alt="Mask" style="width: 100%; max-width: 200px;">
+                  <div style="margin-top: 5px;">Mask</div>
+                </td>
+                <td style="padding: 5px;">
+                  <img src="output_images/1.7.2/pic_w_kanazawa_toReplace.png" alt="Hole to Fill" style="width: 100%; max-width: 200px;">
+                  <div style="margin-top: 5px;">Hole to Fill</div>
+                </td>
+                <td style="padding: 5px;">
+                  <img src="output_images/1.7.2/pic_w_kanazawa_inpaint.png" alt="Pic w/Kanazawa Inpainted" style="width: 100%; max-width: 200px;">
+                  <div style="margin-top: 5px;">Pic w/Kanazawa Inpainted</div>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1.7.3 Text-Conditioned Image-to-image Translation -->
+      <div class="row mb-4">
+        <div class="col-lg-12">
+          <h3>1.7.3 Text-Conditioned Image-to-image Translation</h3>
+          <p>Now, we will do the same thing as the previous section, but guide the projection with a text prompt. This is no longer pure "projection to the natural image manifold" but also adds control using language. This is simply a matter of changing the prompt from <code>"a high quality photo"</code> to any of your prompt!</p>
+          <p>Below are the results of text-conditioning applied to the Campanile, as well as a few new photos, using the given prompt at noise levels [1, 3, 5, 7, 10, 20] (and other noise levels we found to be interesting for certain outputs).</p>
+        </div>
+      </div>
+
+      <!-- Text-Conditioned - Campanile Rocket -->
+      <div class="row mb-5">
+        <div class="col-lg-12">
+          <div style="overflow-x: auto;">
+            <table style="width: 100%; text-align: center; border-collapse: collapse; font-family: serif; font-size: 14px;">
+              <tr>
+                <td style="padding: 2px;">
+                  <img src="output_images/1.7.3/campanille_rocket_1.png" alt="Level 1" style="width: 100%; min-width: 100px;">
+                  <div style="margin-top: 5px;">Rocket Ship at noise<br>level 1</div>
+                </td>
+                <td style="padding: 2px;">
+                  <img src="output_images/1.7.3/campanille_rocket_3.png" alt="Level 3" style="width: 100%; min-width: 100px;">
+                  <div style="margin-top: 5px;">Rocket Ship at noise<br>level 3</div>
+                </td>
+                <td style="padding: 2px;">
+                  <img src="output_images/1.7.3/campanille_rocket_5.png" alt="Level 5" style="width: 100%; min-width: 100px;">
+                  <div style="margin-top: 5px;">Rocket Ship at noise<br>level 5</div>
+                </td>
+                <td style="padding: 2px;">
+                  <img src="output_images/1.7.3/campanille_rocket_7.png" alt="Level 7" style="width: 100%; min-width: 100px;">
+                  <div style="margin-top: 5px;">Rocket Ship at noise<br>level 7</div>
+                </td>
+                <td style="padding: 2px;">
+                  <img src="output_images/1.7.3/campanille_rocket_10.png" alt="Level 10" style="width: 100%; min-width: 100px;">
+                  <div style="margin-top: 5px;">Rocket Ship at noise<br>level 10</div>
+                </td>
+                <td style="padding: 2px;">
+                  <img src="output_images/1.7.3/campanille_rocket_20.png" alt="Level 20" style="width: 100%; min-width: 100px;">
+                  <div style="margin-top: 5px;">Rocket Ship at noise<br>level 20</div>
+                </td>
+                <td style="padding: 2px;">
+                  <img src="output_images/cambinelle/campanile_resized.png" alt="Original" style="width: 100%; min-width: 100px;">
+                  <div style="margin-top: 5px;"><br>Campanile</div>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Text-Conditioned - Cat Tower -->
+      <div class="row mb-3">
+        <div class="col-lg-12">
+          <div class="text-center my-3">
+            <img src="cat_tree.jpg" alt="Cat Tree (original)" style="width: 100%; min-width: 100px; max-width: 150px;">
+            <p>Cat Tree (original)</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mb-5">
+        <div class="col-lg-12">
+          <div style="overflow-x: auto; margin-bottom: 20px;">
+            <table style="width: 100%; text-align: center; border-collapse: collapse; font-family: serif; font-size: 14px;">
+              <tr>
+                <td style="padding: 5px;">
+                  <img src="output_images/1.7.3/cat_tower_1.png" alt="Level 1" style="width: 100%; min-width: 100px; max-width: 150px;">
+                  <div style="margin-top: 5px;">Cat Tower at noise<br>level 1</div>
+                </td>
+                <td style="padding: 5px;">
+                  <img src="output_images/1.7.3/cat_tower_3.png" alt="Level 3" style="width: 100%; min-width: 100px; max-width: 150px;">
+                  <div style="margin-top: 5px;">Cat Tower at noise<br>level 3</div>
+                </td>
+                <td style="padding: 5px;">
+                  <img src="output_images/1.7.3/cat_tower_5.png" alt="Level 5" style="width: 100%; min-width: 100px; max-width: 150px;">
+                  <div style="margin-top: 5px;">Cat Tower at noise<br>level 5</div>
+                </td>
+                <td style="padding: 5px;">
+                  <img src="output_images/1.7.3/cat_tower_7.png" alt="Level 7" style="width: 100%; min-width: 100px; max-width: 150px;">
+                  <div style="margin-top: 5px;">Cat Tower at noise<br>level 7</div>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 5px;">
+                  <img src="output_images/1.7.3/cat_tower_10.png" alt="Level 10" style="width: 100%; min-width: 100px; max-width: 150px;">
+                  <div style="margin-top: 5px;">Cat Tower at noise<br>level 10</div>
+                </td>
+                <td style="padding: 5px;">
+                  <img src="output_images/1.7.3/cat_tower_20.png" alt="Level 20" style="width: 100%; min-width: 100px; max-width: 150px;">
+                  <div style="margin-top: 5px;">Cat Tower at noise<br>level 20</div>
+                </td>
+                <td style="padding: 5px;">
+                  <img src="output_images/1.7.3/cat_tower_21.png" alt="Level 21" style="width: 100%; min-width: 100px; max-width: 150px;">
+                  <div style="margin-top: 5px;">Cat Tower at noise<br>level 21</div>
+                </td>
+                <td style="padding: 5px;">
+                  <img src="output_images/1.7.3/cat_tower_24.png" alt="Level 24" style="width: 100%; min-width: 100px; max-width: 150px;">
+                  <div style="margin-top: 5px;">Cat Tower at noise<br>level 24</div>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Text-Conditioned - Smoll -->
+      <div class="row mb-3">
+        <div class="col-lg-12">
+          <div class="text-center my-3">
+            <img src="smoll.jpg" alt="Smoll (original)" style="width: 100%; min-width: 100px; max-width: 150px;">
+            <p>Smoll (original)</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mb-5">
+        <div class="col-lg-12">
+          <div style="overflow-x: auto; margin-bottom: 20px;">
+            <table style="width: 100%; text-align: center; border-collapse: collapse; font-family: serif; font-size: 14px;">
+              <tr>
+                <td style="padding: 5px;">
+                  <img src="output_images/1.7.3/smoll_1.png" alt="Level 1" style="width: 100%; min-width: 100px; max-width: 150px;">
+                  <div style="margin-top: 5px;">Smoll at noise<br>level 1</div>
+                </td>
+                <td style="padding: 5px;">
+                  <img src="output_images/1.7.3/smoll_3.png" alt="Level 3" style="width: 100%; min-width: 100px; max-width: 150px;">
+                  <div style="margin-top: 5px;">Smoll at noise<br>level 3</div>
+                </td>
+                <td style="padding: 5px;">
+                  <img src="output_images/1.7.3/smoll_5.png" alt="Level 5" style="width: 100%; min-width: 100px; max-width: 150px;">
+                  <div style="margin-top: 5px;">Smoll at noise<br>level 5</div>
+                </td>
+                <td style="padding: 5px;">
+                  <img src="output_images/1.7.3/smoll_7.png" alt="Level 7" style="width: 100%; min-width: 100px; max-width: 150px;">
+                  <div style="margin-top: 5px;">Smoll at noise<br>level 7</div>
+                </td>
+                <td style="padding: 5px;">
+                  <img src="output_images/1.7.3/smoll_10.png" alt="Level 10" style="width: 100%; min-width: 100px; max-width: 150px;">
+                  <div style="margin-top: 5px;">Smoll at noise<br>level 10</div>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 5px;">
+                  <img src="output_images/1.7.3/smoll_20.png" alt="Level 20" style="width: 100%; min-width: 100px; max-width: 150px;">
+                  <div style="margin-top: 5px;">Smoll at noise<br>level 20</div>
+                </td>
+                <td style="padding: 5px;">
+                  <img src="output_images/1.7.3/smoll_21.png" alt="Level 21" style="width: 100%; min-width: 100px; max-width: 150px;">
+                  <div style="margin-top: 5px;">Smoll at noise<br>level 21</div>
+                </td>
+                <td style="padding: 5px;">
+                  <img src="output_images/1.7.3/smoll_22.png" alt="Level 22" style="width: 100%; min-width: 100px; max-width: 150px;">
+                  <div style="margin-top: 5px;">Smoll at noise<br>level 22</div>
+                </td>
+                <td style="padding: 5px;">
+                  <img src="output_images/1.7.3/smoll_24.png" alt="Level 24" style="width: 100%; min-width: 100px; max-width: 150px;">
+                  <div style="margin-top: 5px;">Smoll at noise<br>level 24</div>
+                </td>
+                <td style="padding: 5px;">
+                  <img src="output_images/1.7.3/smoll_25.png" alt="Level 25" style="width: 100%; min-width: 100px; max-width: 150px;">
+                  <div style="margin-top: 5px;">Smoll at noise<br>level 25</div>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1.8 Visual Anagrams -->
+      <div class="row mb-4">
+        <div class="col-lg-12">
+          <h2>1.8 Visual Anagrams</h2>
+          <p>In this part, we are finally ready to implement <a href="https://dangeng.github.io/visual_anagrams/" target="_blank">Visual Anagrams</a> and create optical illusions with diffusion models. In this part, we will create an image that looks like <code>"an oil painting of an old man"</code>, but when flipped upside down will reveal <code>"an oil painting of people around a campfire"</code>.</p>
+          <p>To do this, we will denoise an image x<sub>t</sub> at step t normally with the prompt p₁, to obtain noise estimate ε₁. But at the same time, we will flip x<sub>t</sub> upside down, and denoise with the prompt p₂, to get noise estimate ε₂. We can flip ε₂ back, and average the two noise estimates. We can then perform a reverse diffusion step with the averaged noise estimate.</p>
+          <p>The full algorithm is:</p>
+          <p class="text-center"><em>ε₁ = CFG of UNet(x<sub>t</sub>, t, p₁)</em></p>
+          <p class="text-center"><em>ε₂ = flip(CFG of UNet(flip(x<sub>t</sub>), t, p₂))</em></p>
+          <p class="text-center"><em>ε = (ε₁ + ε₂) / 2</em></p>
+          <p>where UNet is the diffusion model UNet from before, flip(·) is a function that flips the image, and p₁ and p₂ are two different text prompt embeddings. And our final noise estimate is ε.</p>
+          <p>With this, let's retry some of the illusions that were giving us trouble before. Hover over each image to see it rotate and reveal the hidden image!</p>
+        </div>
+      </div>
+
+      <style>
+      .anagram-container {
+        display: inline-block;
+        position: relative;
+        margin: 20px;
+      }
+
+      .anagram-img {
+        width: 250px;
+        height: auto;
+        transition: transform 1.5s ease-in-out;
+        display: block;
+        transform: rotate(0deg);
+      }
+
+      /* If an image should start rotated, give it the `rotated` class */
+      .anagram-img.rotated {
+        transform: rotate(180deg);
+      }
+
+      /* Hover: non-rotated images rotate 180deg, rotated images rotate back to 0deg */
+      .anagram-container:hover .anagram-img {
+        transform: rotate(180deg);
+      }
+
+      .anagram-container:hover .anagram-img.rotated {
+        transform: rotate(0deg);
+      }
+
+      .anagram-label {
+        text-align: center;
+        margin-top: 10px;
+        font-family: serif;
+        font-size: 18px;
+        font-weight: bold;
+      }
+
+      .anagram-sublabel {
+        text-align: center;
+        font-family: serif;
+        font-size: 14px;
+        color: #666;
+        font-style: italic;
+      }
+      /* small caption chips used throughout part 1 */
+      .chip {
+        background-color: #f0f0f0;
+        color: #111;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 14px;
+      }
+      </style>
+
+      <!-- Fire + Old Man Anagrams -->
+      <div class="row mb-5">
+        <div class="col-lg-12">
+          <h4>Fire + Old Man Anagram(s)</h4>
+          <div style="text-align: center;">
+            <div class="anagram-container">
+              <img src="output_images/1.8/fire+old_man-anogram1.png" class="anagram-img">
+              <div class="anagram-label">"Fire" / "Old Man"</div>
+              <div class="anagram-sublabel">Hover to rotate</div>
+            </div>
+            
+            <div class="anagram-container">
+              <img src="output_images/1.8/fire+old_man-anogram4.png" class="anagram-img rotated">
+              <div class="anagram-label">"Fire" / "Old Man"</div>
+              <div class="anagram-sublabel">Hover to rotate</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fox + Mountains Anagrams -->
+      <div class="row mb-5">
+        <div class="col-lg-12">
+          <h4>Fox + Mountains Anagram(s)</h4>
+          <div style="text-align: center;">
+            <div class="anagram-container">
+              <img src="output_images/1.8/fox+mountains-anogram2.png" class="anagram-img rotated">
+              <div class="anagram-label">"Fox" / "Mountains"</div>
+              <div class="anagram-sublabel">Hover to rotate</div>
+            </div>
+            
+            <div class="anagram-container">
+              <img src="output_images/1.8/fox+mountains-anogram5.png" class="anagram-img rotated">
+              <div class="anagram-label">"Fox" / "Mountains"</div>
+              <div class="anagram-sublabel">Hover to rotate</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cat + Wizard Anagrams -->
+      <div class="row mb-5">
+        <div class="col-lg-12">
+          <h4>Cat + Wizard Anagram(s)</h4>
+          <div style="text-align: center;">
+            <div class="anagram-container">
+              <img src="output_images/1.8/cat+wizard-anogram2.png" class="anagram-img rotated">
+              <div class="anagram-label">"Cat" / "Wizard"</div>
+              <div class="anagram-sublabel">Hover to rotate</div>
+            </div>
+            
+            <div class="anagram-container">
+              <img src="output_images/1.8/cat+wizard-anogram3.png" class="anagram-img">
+              <div class="anagram-label">"Cat" / "Wizard"</div>
+              <div class="anagram-sublabel">Hover to rotate</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1.9 Hybrid Images -->
+      <div class="row mb-4">
+        <div class="col-lg-12">
+          <h2>1.9 Hybrid Images</h2>
+          <p>In this part we'll implement <a href="https://dangeng.github.io/factorized_diffusion/" target="_blank">Factorized Diffusion</a> and create hybrid images just like in project 2.</p>
+          <p>In order to create hybrid images with a diffusion model we can use a similar technique as above. We will create a composite noise estimate ε, by estimating the noise with two different text prompts, and then combining low frequencies from one noise estimate with high frequencies of the other. The algorithm is:</p>
+          <p class="text-center"><em>ε₁ = CFG of UNet(x<sub>t</sub>, t, p₁)</em></p>
+          <p class="text-center"><em>ε₂ = CFG of UNet(x<sub>t</sub>, t, p₂)</em></p>
+          <p class="text-center"><em>ε = f<sub>lowpass</sub>(ε₁) + f<sub>highpass</sub>(ε₂)</em></p>
+          <p>where UNet is the diffusion model UNet, f<sub>lowpass</sub> is a low pass function, f<sub>highpass</sub> is a high pass function, and p₁ and p₂ are two different text prompt embeddings. Our final noise estimate is ε. We used a gaussian blur of kernel size 9 and sigma 2.</p>
+          <p>Here are the results on two different hybrid image pairs of prompts. Hover over the images to zoom in and see the high-frequency detail!</p>
+        </div>
+      </div>
+
+      <style>
+      .hybrid-container {
+        display: inline-block;
+        margin: 20px;
+        text-align: center;
+      }
+
+      .hybrid-wrapper {
+        width: 200px;
+        height: 200px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+      }
+
+      /* Start much smaller but still centered and contained */
+      .hybrid-img {
+        object-fit: contain;
+        width: 100%;           /* keep it sized relative to wrapper */
+        height: 100%;
+        transform: scale(0.1); /* very small default view */
+        transition: transform 1.25s ease-in-out;
+        cursor: zoom-in;
+      }
+
+      /* Hover: scale back to natural fit (fills wrapper but never exceeds it) */
+      .hybrid-wrapper:hover .hybrid-img {
+        transform: scale(1);
+        cursor: zoom-out;
+      }
+
+      .hybrid-label {
+        margin-top: 10px;
+        font-family: serif;
+        font-size: 18px;
+        font-weight: bold;
+      }
+
+      .hybrid-sublabel {
+        font-family: serif;
+        font-size: 14px;
+        color: #666;
+        font-style: italic;
+      }
+      </style>
+
+      <!-- Hybrid Images - Cat + Man -->
+      <div class="row mb-5">
+        <div class="col-lg-12">
+          <h4>Cat + Man Hybrid Images</h4>
+          <div style="text-align: center;">
+            <div class="hybrid-container">
+              <div class="hybrid-wrapper">
+                <img src="output_images/1.9/cat+man-hybrid0.png" class="hybrid-img">
+              </div>
+              <div class="hybrid-label">"Man" (far) / "Cat" (close)</div>
+              <div class="hybrid-sublabel">Hover to zoom in</div>
+            </div>
+            
+            <div class="hybrid-container">
+              <div class="hybrid-wrapper">
+                <img src="output_images/1.9/cat+man-hybrid5.png" class="hybrid-img">
+              </div>
+              <div class="hybrid-label">"Man" (far) / "Cat" (close)</div>
+              <div class="hybrid-sublabel">Hover to zoom in</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hybrid Images - Skull + Waterfall -->
+      <div class="row mb-5">
+        <div class="col-lg-12">
+          <h4>Skull + Waterfall Hybrid Images</h4>
+          <div style="text-align: center;">
+            <div class="hybrid-container">
+              <div class="hybrid-wrapper">
+                <img src="output_images/1.9/skull+waterfall-hybrid0.png" class="hybrid-img">
+              </div>
+              <div class="hybrid-label">"Waterfall" (far) / "Skull" (close)</div>
+              <div class="hybrid-sublabel">Hover to zoom in</div>
+            </div>
+            
+            <div class="hybrid-container">
+              <div class="hybrid-wrapper">
+                <img src="output_images/1.9/skull+waterfall-hybrid1.png" class="hybrid-img">
+              </div>
+              <div class="hybrid-label">"Waterfall" (far) / "Skull" (close)</div>
+              <div class="hybrid-sublabel">Hover to zoom in</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div>
+    </section>
+
+
+  </main>
+
+  <footer id="footer" class="footer position-relative">
+    <div class="container">
+      <div class="copyright text-center ">
+        <p>© <span>Copyright 2026.</span> <span>Joel's CS180 Projects.</span></p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scroll Top -->
+  <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i
+      class="bi bi-arrow-up-short"></i></a>
+
+  <!-- Preloader -->
+  <div id="preloader"></div>
+
+  <!-- Vendor JS Files -->
+  <script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="../assets/vendor/php-email-form/validate.js"></script>
+  <script src="../assets/vendor/aos/aos.js"></script>
+  <script src="../assets/vendor/typed.js/typed.umd.js"></script>
+  <script src="../assets/vendor/purecounter/purecounter_vanilla.js"></script>
+  <script src="../assets/vendor/waypoints/noframework.waypoints.js"></script>
+  <script src="../assets/vendor/isotope-layout/isotope.pkgd.min.js"></script>
+  <script src="../assets/vendor/imagesloaded/imagesloaded.pkgd.min.js"></script>
+  <script src="../assets/vendor/glightbox/js/glightbox.min.js"></script>
+  <script src="../assets/vendor/swiper/swiper-bundle.min.js"></script>
+
+  <!-- Main JS File -->
+  <script src="../assets/js/main.js"></script>
+
+</body>
+
+</html>
